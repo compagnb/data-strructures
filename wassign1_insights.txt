@@ -1,0 +1,13 @@
+
+tr td = place address & additional info
+td h4 = place
+td h4 br b = event
+td h4 br b br = address
+td style="border-bottom:1px solid #e3e3e3; width:260px" valign="top" = separates places
+td <span style="color:darkblue; font-size:10pt;"><img src="../images/wheelchair.jpg" alt="Wheelchair Access" width="20" vspace="5" hspace="10" align="absmiddle"/>Wheelchair access</span> = wheelchair accessible
+td div.detailsBox = more details for the meetings
+
+tr td td b = time and meeting type
+
+tr td td td a.getDirections = link to get directions
+
