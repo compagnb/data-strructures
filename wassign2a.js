@@ -42,20 +42,3 @@ $(table).find('tbody tr td:first-child').each(function (i, elem){
     
     console.log(parsedResults[i]);
 });
-
-// trims space
-function myTrim(x) {
-    return x.replace(/^\s+|\s+$/gm,' ');
-}
-
-// // sort and find .each(function(i,elem){
-//     var colData = $(elem).text();
-//     var finalData = colData.sp('br');
-//     console.log();
-    
-// 
-// $('table').attr('cellpadding', '5').html()
-// iterate through each h4
-// $('h4').each(function(i,elem){
-//     console.log($(elem).html());
-// });
