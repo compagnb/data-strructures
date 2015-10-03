@@ -27,8 +27,11 @@ $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
    meetings.push( $(elem).find('td').eq(0).html().split('<br>')[2].trim()); 
     cleanMeetings.push(meetings[i].substring(0, meetings[i].indexOf(',')));
    fullAddress[i] = cleanMeetings[i] + ', New York, NY';
-   console.log(fullAddress[i].split(' ').join('+'));
-});
+//   console.log(fullAddress[i].split(' ').join('+'));
 
-// console.log(meetings[27]);
+
+});
+    console.log(meetings[27]);
+    // fs.writeFileSync('/home/ubuntu/workspace/data/origAddress.txt', JSON.stringify(fullAddress));
+
 
