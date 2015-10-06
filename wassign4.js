@@ -1,35 +1,63 @@
-// IN THE MONGO SHELL: 
-//   CREATE DATABASE citibike AND SWITCH TO IT WITH: 
-//      use citibike
-//   CREATE COLLECTION stations WITH: 
-//      db.createCollection('stations')
+// --------------------------------------------
+// weekly assignmnet 5
+//
+// barbara compagnoni
+// fall 2015
+//
+// before running run the following command in 
+// terminal "npm install mongodb"
+// --------------------------------------------
 
-var request = require('request');
+var MongoClient = require('mongodb').MongoClient
+  , assert = require('assert');
+  
+var fs = require('fs'); //part of core modules doesn't need an installvar cheerio = require('cheerio'); // npm intall cheerio
+var async = require('async'); // npm install async
+var request = require('request'); // npm install request
+var cheerio = require('cheerio'); // npm intall cheerio
+ 
+// Connection URL 
+var url = 'mongodb://localhost:27017/aameetings';
 
-request('https://www.citibikenyc.com/stations/json', function(error, response, body) {
-    var stationData = JSON.parse(body);
-    stationData = stationData.stationBeanList
+var meetingInfo = JSON.parse(fs.readFileSync('/home/ubuntu/workspace/data/inclass4.txt')); // not this file old file
 
-    // Connection URL
-    var url = 'mongodb://' + process.env.IP + ':27017/citibike';
+// test input
+// console.log(meetingInfo);
 
-    // Retrieve
-    var MongoClient = require('mongodb').MongoClient; // npm install mongodb
+// Use connect method to connect to the Server 
+MongoClient.connect(url, function(err, db) {
+  
+  // if there isn't a connection print error
+  assert.equal(null, err);
+  
+  // log in console if you can connect to server
+  console.log("Connected correctly to server");
+  
+  insertDocuments(db, function() {
+    
+  // close database connection
+  db.close();
+  });
+});
 
-    MongoClient.connect(url, function(err, db) {
-        if (err) {return console.dir(err);}
+// function to insert info into documents
+var insertDocuments = function(db, callback) {
+  // Get the documents collection 
+  var collection = db.collection('aameetings_area2');
+  // Insert some documents 
+  collection.insert(
+  meetingInfo, function(err, result) {
+    assert.equal(err, null);
+    assert.equal(meetingInfo.length, result.result.n);
+    assert.equal(meetingInfo.length, result.ops.length);
+    console.log("Inserted " + meetingInfo.length +" documents into the document collection");
+    callback(result);
+  });
+}
 
-        var collection = db.collection('dockingStations');
 
-        // THIS IS WHERE THE DOCUMENT(S) IS/ARE INSERTED TO MONGO:
-        // for (var i=0; i < stationData.stationBeanList.length; i++) {
-        //     collection.insert(stationData.stationBeanList[i]);
-        //     }
-        
-        collection.insert(stationData);
-        
-        db.close();
 
-    }); //MongoClient.connect
 
-}); //request
+
+ 
+  
