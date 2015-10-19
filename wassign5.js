@@ -23,12 +23,14 @@ var cleanedAddresses = [];
 var geocodedAddresses = [];
 var locationNames = [];
 var meetingNames = [];
+var meetingSpecs = [];
 var meetingDays = [];
 var meetingTimes = [];
 var meetingTypes = [];
 var handicapAccessible = [];
 var specialInfo = [];
 var directions = [];
+var test = [];
 
 // put contents of the file in a variable
 var fileContent = fs.readFileSync('/home/ubuntu/workspace/data/aameetinglist02M.txt');
@@ -52,7 +54,11 @@ $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
 // location names -- already cleaned
 $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
    locationNames.push( $(elem).find('h4').eq(0).text().trim()); 
+   
 //   console.log(locationNames[i]);
+   
+   // cleaned and none replaces all with no specific location listed
+//   console.log(bool(locationNames[i]))
 });
 
 // meeting names -- need to clean dashes and appostrophes
@@ -60,20 +66,52 @@ $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
    meetingNames.push( $(elem).find('b').eq(0).text().replace(/\s+/g,' ').trim()); 
     // console.log(meetingNames[i]);
    
-   //cleaned
+   // cleaned
 //   console.log(fixMeetingNames(meetingNames[i]));
 });
 
-// days
+// meeting specs
+
+
 $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
-   meetingDays.push( $(elem).find('td').next('td').find('b').eq(0).html()); 
-//   console.log(meetingDays[i]);
-});
+  meetingSpecs.push( $(elem).find('td').eq(1).html().replace(/\s\s+/g, "").split("<br><br>"));
+  
+  var type = meetingSpecs[i].toString().match(/<b>Meeting Type<\/b>/gi);
+  var si = "<b>Special Interest</b>";
+  
+  if (meetingSpecs[i].toString().match(type)){
+    meetingTypes.push(meetingSpecs[i].toString().replace(/.*<b>Meeting Type<\/b>([^<]*).*/, "$1"));
+  }
+  
+  meetingDays.push( );
+  
+  
+  meetingTimes.push(meetingSpecs[i].toString().match(/\d{1,2}:\d{1,2} [aApP][mM]/g) );
+  
+  console.log(meetingTypes[i]);
+
+//     test.push(meetingSpecs[i].toString().replace(/^\s+|\s+$/gm,'').trim());
+//     // meetingTimes.push(meetingSpecs[i].substring(meetingSpecs[i].indexOf("to")+8, test[i].indexOf("to")-8)));
+    
+    
+//     // console.log(meetingSpecs[1].toString().replace(/^\s+|\s+$/gm,'').trim());
+//     // console.log("times: " + test[i].substring(test[i].indexOf("From"), test[i].indexOf("Meeting Type")));
+//     // console.log("meeting types: " + test[i].substring(test[i].indexOf("Meeting Type")));
+//     console.log("------------------" );
+//   console.log(test[i]);
+//   console.log(meetingTimes[i]);
+   
+//   console.log("days: "  );
+//   console.log("times: " + meetingSpecs[i].toString().substring(meetingSpecs[i].indexOf('from'), meetingSpecs[i].indexOf('Meeting Type')));
+// //   console.log("Special Interest: " + meetingSpecs[i].toString().substring(meetingSpecs[i].indexOf('Special Interest')));
+//   console.log("meeting type: " + meetingSpecs[i].toString().substring(meetingSpecs[i].indexOf('Meeting Type'), meetingSpecs[i].indexOf('meeting')));
+ });
 
 
 // times
 $('table[cellpadding=5]').find('tbody').find('tr').next('td').each (function (i, elem){
-   meetingTimes.push( $(elem).find('td').find('b').next('b').prev().eq(0).html()); 
+   meetingTimes.push( $(elem).find('td').eq(1).text()); 
+   
 //   console.log(meetingTimes[i]);
 });
 
@@ -146,6 +184,13 @@ function fixMeetingNames(wholeName){
         return  secondHalf.substring(compare);
     // this is for ones that match
     }
+}
+
+function cleanDays(value){
+    var val1 = value.replace("FromtoMeeting Type", "");
+    var val2 = val1.replace("Special Interest", "");
+    return val2;
+    
 }
 
 function bool(value){
