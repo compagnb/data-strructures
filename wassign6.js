@@ -23,34 +23,25 @@ var aaPage = "http://www.nyintergroup.org/meetinglist/meetinglist.cfm?zone=02&bo
     // file link for testing
     // var fileContent = fs.readFileSync('/home/ubuntu/workspace/data/aameetinglist02M.txt');
     // use cheerio to load the content
-var $ = cheerio.load(aaPage);
-// var $ = cheerio.load(fileContent);
+    // var $ = cheerio.load(fileContent);
 
 // Enviornment Variables
-var apiKey = process.env.GMAKEY;
-// var apiKey ='AIzaSyA-CKC1h7HYmCnIminO6aSpD0yaAxNTXw4';
+// var apiKey = process.env.GMAKEY;
+var apiKey ='AIzaSyA-CKC1h7HYmCnIminO6aSpD0yaAxNTXw4';
 
 
 var meetingInfo = [];
 var origAddresses = [];
-var cleanedAddresses = [];
 var geocodedAddresses = [];
 var locationNames = [];
-var cleanedLocationNames = [];
 var meetingNames = [];
-var cleanedMeetingNames = [];
 var meetingSpecs = [];
 var meetingDays = [];
 var meetingTimes = [];
 var meetingTypes = [];
 var handicapAccessible = [];
-var cleanedHandicapAccessible = [];
-var specialInfo = [];
-var cleanedSpecialInfo = [];
+var specialInfo = [];;
 var directions = [];
-var cleanedDirections = [];
-
-var $;
 
 
 async.waterfall([
@@ -124,202 +115,176 @@ function getMeetingInfo(body) {
 
     // use cheerio to load the content
     $ = cheerio.load(body);
-    
+
     // get info from tables
     $('table[cellpadding=5]').find('tbody').find('tr').each(function(i, elem) {
+        
+            // make an api request using the addy pulled in and the api key
+            var apiRequest = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + getGeoCodedAddress[i] + '&key=' + apiKey;
 
-        var obj = new Object;
+            var obj = new Object;
 
-            obj.meetingName = getCleanedName(i); 
+            obj.meetingName = getCleanedName(i);
             obj.locationName = getCleanedLocationName(i);
             obj.origAddress = getOriginalAddress(i);
             obj.cleanedAddress = getCleanedAddress(i);
-            // obj.geotaggedAddress = getGeoTaggedAddress(i);
+            obj.meetingLatLong = getLatLong(i);
             // obj.meetingDays = getMeetingDays(i);
             // obj.meetingTimes = getMeetingTimes(i);
             // obj.meetingTypes = getMeetingTypes(i);
             // obj.meetingSpecialInterest = getMeetingSI(i);
             obj.handiAccess = getAccessible(i);
-            obj.specialInfo = getMeetingInfo(i); 
+            obj.specialInfo = getMeetingInfo(i);
             // obj.directions = 
-             meetingInfo.push(obj);
+            meetingInfo.push(obj);
+            console.log(obj);
 
-             console.log(obj);
 
-        function getCleanedName(i){
-            // meeting names
-            meetingNames.push( $(elem).find('b').eq(0).text().replace(/\s+/g,' ').trim());
-            cleanedMeetingNames.push(fixMeetingNames(meetingNames[i]));
+            function getCleanedName(i) {
+                // meeting names
+                meetingNames.push($(elem).find('b').eq(0).text().replace(/\s+/g, ' ').trim());
 
-            return cleanedMeetingNames[i];
-        }   
+                return fixMeetingNames(meetingNames[i]);
+            }
 
-        function getCleanedLocationName(i){
-            // location names
-            locationNames.push( $(elem).find('h4').eq(0).text().trim()); 
-            cleanedLocationNames.push(bool(locationNames[i]));
+            function getCleanedLocationName(i) {
+                // location names
+                locationNames.push($(elem).find('h4').eq(0).text().trim());
 
-            return cleanedLocationNames[i];
-        }
-        
-        function getOriginalAddress(i){
-            // addresses
-            origAddresses.push($(elem).find('td').eq(0).html().split('<br>')[2].trim());
-            
-            return origAddresses[i];
-        }
-        
-        function getCleanedAddress(i){
-            // addresses
-            cleanedAddresses.push(fixAddresses(origAddresses[i]));
-            
-            return cleanedAddresses[i];
-        }
-        
-        function getGeoTaggedAddress(i){
-            
-        }
-        
-        function getLatLong(i){
-            
-        }
-        
-        function getMeetingDays(i){
-            // days
-            
-        }
-        
-        function getMeetingTimes(i){
-             // times
-            
-        }
-        
-        function getMeetingTypes(i){
-            // meeting type
-            
-        }
-        
-        function getMeetingSI(i){
-             // special interest
-            
-        }
-       
-       function getMeetingInfo(i){
-            // special info/motto
-            specialInfo.push( $(elem).find('.detailsBox').eq(0).text().trim());
-            
-            // return cleaned
-            return bool(specialInfo[i]);
-            
-        }
-              
-        function getAccessible(i){
-            // handi-able
-            handicapAccessible.push( $(elem).find('span').eq(0).text().trim());
-            cleanedHandicapAccessible.push();
-            
-            // return cleaned
-            return bool(handicapAccessible[i]);
-        }
+                return bool(locationNames[i]);
+            }
 
-    });
-    
-    // // calls for array and the function to go over 
-    // async.eachSeries(cleanedHandicapAccessible, function(value, callback) {
+            function getOriginalAddress(i) {
+                // addresses
+                origAddresses.push($(elem).find('td').eq(0).html().split('<br>')[2].trim());
 
-    //     // make an api request using the addy pulled in and the api key
-    //     var apiRequest = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + fixAddresses(value) + '&key=' + apiKey;
+                return origAddresses[i];
+            }
 
-    //     // for testing purposes
-    //     // console.log (apiRequest);
+            function getCleanedAddress(i) {
+                // addresses
 
-    //     var thisMeeting = new Object;
-    //     thisMeeting.address = value;
+                return fixAddresses(origAddresses[i]);
+            }
 
-    //     request(apiRequest, function(error, resp, body) {
-    //         if (error) {
-    //             throw error;
-    //         }
+            function getGeoCodedAddress(i) {
+                return fixAddresses(origAddresses[i]).split(' ').join('+');
 
-    //         if (JSON.parse(body).status == "ZERO_RESULTS") {
-    //             console.log("ZERO RESULTS for" + value);
-    //         }
-    //         else {
-    //             thisMeeting.meetingName = cleanedMeetingNames(value);
-    //             thisMeeting.loctionName = cleanedLocationNames(value);
-    //             thisMeeting.origAddress = origAddresses(value);
-    //             thisMeeting.formattedAddress = fixAddresses(value);
-    //             thisMeeting.latLong = JSON.parse(body).results[0].geometry.location;
-    //             thisMeeting.specialInfo = cleanedSpecialInfo(value);
-    //             thisMeeting.handicap = cleanedHandicapAccessible(value);
-    
-    //             meetingInfo.push(thisMeeting);
-    //         }
-    //     });
-    //     setTimeout(callback, 300);
-    // }, function() {
-    //     fs.writeFile('/home/ubuntu/workspace/data/test.txt', JSON.stringify(meetingInfo), function(err) {
-    //         if (err)
-    //             return console.log('Error');
-    //         console.log('Wrote ' + meetingInfo.length + ' entries to file ' + 'test.txt');
+            }
 
-    //     });
-    // });
+            function getMeetingDays(i) {
+                // days
+
+            }
+
+            function getMeetingTimes(i) {
+                // times
+
+            }
+
+            function getMeetingTypes(i) {
+                // meeting type
+
+            }
+
+            function getMeetingSI(i) {
+                // special interest
+
+            }
+
+            function getMeetingInfo(i) {
+                // special info/motto
+                specialInfo.push($(elem).find('.detailsBox').eq(0).text().trim());
+
+                // return cleaned
+                return bool(specialInfo[i]);
+
+            }
+
+            function getAccessible(i) {
+                // handi-able
+                handicapAccessible.push($(elem).find('span').eq(0).text().trim());
+
+                // return cleaned
+                return bool(handicapAccessible[i]);
+            }
+
+            function getLatLong(i) {
+                
+                // for testing purposes
+                // console.log (apiRequest);
+
+                request(apiRequest, function(error, resp, body) {
+                    if (error) {
+                        throw error;
+                    }
+
+                    if (JSON.parse(body).status == "ZERO_RESULTS") {
+                        return "ZERO RESULTS for" ;
+                    }
+                    else {
+                        return JSON.parse(body).results[0].geometry.location;
+                    }
+                });
+            } setTimeout(300);
+
+         });
+
 }
 
 
 
 
-    // function to clean addresses
-    function fixAddresses(oldAddress) {
-        var newAddress = oldAddress.substring(0, oldAddress.indexOf(',')) + ' New York, NY';
-        return newAddress;
+// function to clean addresses
+function fixAddresses(oldAddress) {
+    var newAddress = oldAddress.substring(0, oldAddress.indexOf(',')) + ' New York, NY';
+    return newAddress;
+}
+
+function bool(value) {
+    if (value == "") {
+        return "none";
     }
-
-    function bool(value) {
-        if (value == "") {
-            return "none";
-        }
-        else {
-            return value;
-        }
+    else {
+        return value;
     }
-    // function to clean meeting names
-    function fixMeetingNames(wholeName) {
-        // var firstHalf = wholeName.substring(0,wholeName.indexOf('-'));
-        // return firstHalf;
-        var middle = wholeName.indexOf('-');
-        var firstHalf = wholeName.toUpperCase().substring(0, middle).replace(/A.A./g, "AA").trim();
-        var secondHalf = wholeName.toUpperCase().substring(middle + 2).replace(/- |-/g, "").trim();
-        var firstHalfClean = firstHalf.replace(/\s/g, '');
-        var secondHalfClean = secondHalf.replace(/\s/g, '');
+}
+// function to clean meeting names
+function fixMeetingNames(wholeName) {
+    // var firstHalf = wholeName.substring(0,wholeName.indexOf('-'));
+    // return firstHalf;
+    var middle = wholeName.indexOf('-');
+    var firstHalf = wholeName.toUpperCase().substring(0, middle).replace(/A.A./g, "AA").trim();
+    var secondHalf = wholeName.toUpperCase().substring(middle + 2).replace(/- |-/g, "").trim();
+    var firstHalfClean = firstHalf.replace(/\s/g, '');
+    var secondHalfClean = secondHalf.replace(/\s/g, '');
 
-        var compare = firstHalfClean.localeCompare(secondHalfClean);
+    var compare = firstHalfClean.localeCompare(secondHalfClean);
 
-        // console.log("--------------")
-        // console.log("1 string:" + firstHalfClean + " | length: " + firstHalfClean.length );
-        // console.log("2 string:" + secondHalfClean + " | length: " + secondHalfClean.length);
-        // console.log(middle);
-        // console.log(compare);
+    // console.log("--------------")
+    // console.log("1 string:" + firstHalfClean + " | length: " + firstHalfClean.length );
+    // console.log("2 string:" + secondHalfClean + " | length: " + secondHalfClean.length);
+    // console.log(middle);
+    // console.log(compare);
 
-        if (middle < compare && compare >= 4) {
-            // console.log(">= 4" + wholeName.replace(/-/g, ' ').trim());
-            return wholeName.replace(/-/g, ' ').trim();
-            // this is for ones with (:II) after the name
-        }
-        else if (compare == middle - 3 || compare == 0 || secondHalfClean.length == 0 || firstHalfClean.indexOf("(:I") != -1) {
-            // console.log("First return" + firstHalf.replace(/-/g, ' ').trim());
-            return firstHalf.replace(/-/g, ' ').trim();
-            // this is for ones with (:II) after the name
-        }
-        else if (firstHalfClean == 0 || secondHalfClean.indexOf("(:I") != -1) {
-            // console.log("second has #" + secondHalf.replace(/-/g, ' ').trim());
-            return secondHalf.replace(/-/g, ' ').trim();
-            // this is for ones with more then (:II) after the name
-        }
-        else if (compare < 0) {
-            // console.log( "< 0" + firstHalf + ": " + secondHalf.substring(compare));
-            return secondHalf.substring(compare);
-            // this is for ones that match
-        }
+    if (middle < compare && compare >= 4) {
+        // console.log(">= 4" + wholeName.replace(/-/g, ' ').trim());
+        return wholeName.replace(/-/g, ' ').trim();
+        // this is for ones with (:II) after the name
     }
+    else if (compare == middle - 3 || compare == 0 || secondHalfClean.length == 0 || firstHalfClean.indexOf("(:I") != -1) {
+        // console.log("First return" + firstHalf.replace(/-/g, ' ').trim());
+        return firstHalf.replace(/-/g, ' ').trim();
+        // this is for ones with (:II) after the name
+    }
+    else if (firstHalfClean == 0 || secondHalfClean.indexOf("(:I") != -1) {
+        // console.log("second has #" + secondHalf.replace(/-/g, ' ').trim());
+        return secondHalf.replace(/-/g, ' ').trim();
+        // this is for ones with more then (:II) after the name
+    }
+    else if (compare < 0) {
+        // console.log( "< 0" + firstHalf + ": " + secondHalf.substring(compare));
+        return secondHalf.substring(compare);
+        // this is for ones that match
+    }
+}
