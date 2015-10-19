@@ -41,7 +41,7 @@ var $ = cheerio.load(fileContent);
 // Addresses!!!
 $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
    addresses.push( $(elem).find('td').eq(0).html().split('<br>')[2].trim()); 
-//   console.log(addresses[i]);
+  console.log(addresses[i]);
    
    // cleaned addresses
 //   console.log(fixAddresses(addresses[i]) );
@@ -73,22 +73,22 @@ $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
 // meeting specs
 
 
-$('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
-  meetingSpecs.push( $(elem).find('td').eq(1).html().replace(/\s\s+/g, "").split("<br><br>"));
+// $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
+//   meetingSpecs.push( $(elem).find('td').eq(1).html().replace(/\s\s+/g, "").split("<br><br>"));
   
-  var type = meetingSpecs[i].toString().match(/<b>Meeting Type<\/b>/gi);
-  var si = "<b>Special Interest</b>";
+//   var type = meetingSpecs[i].toString().match(/<b>Meeting Type<\/b>/gi);
+//   var si = "<b>Special Interest</b>";
   
-  if (meetingSpecs[i].toString().match(type)){
-    meetingTypes.push(meetingSpecs[i].toString().replace(/.*<b>Meeting Type<\/b>([^<]*).*/, "$1"));
-  }
+//   if (meetingSpecs[i].toString().match(type)){
+//     meetingTypes.push(meetingSpecs[i].toString().replace(/.*<b>Meeting Type<\/b>([^<]*).*/, "$1"));
+//   }
   
-  meetingDays.push( );
+//   meetingDays.push( );
   
   
-  meetingTimes.push(meetingSpecs[i].toString().match(/\d{1,2}:\d{1,2} [aApP][mM]/g) );
+//   meetingTimes.push(meetingSpecs[i].toString().match(/\d{1,2}:\d{1,2} [aApP][mM]/g) );
   
-  console.log(meetingTypes[i]);
+//   console.log(meetingTypes[i]);
 
 //     test.push(meetingSpecs[i].toString().replace(/^\s+|\s+$/gm,'').trim());
 //     // meetingTimes.push(meetingSpecs[i].substring(meetingSpecs[i].indexOf("to")+8, test[i].indexOf("to")-8)));
@@ -105,7 +105,7 @@ $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
 //   console.log("times: " + meetingSpecs[i].toString().substring(meetingSpecs[i].indexOf('from'), meetingSpecs[i].indexOf('Meeting Type')));
 // //   console.log("Special Interest: " + meetingSpecs[i].toString().substring(meetingSpecs[i].indexOf('Special Interest')));
 //   console.log("meeting type: " + meetingSpecs[i].toString().substring(meetingSpecs[i].indexOf('Meeting Type'), meetingSpecs[i].indexOf('meeting')));
- });
+//  });
 
 
 // times
