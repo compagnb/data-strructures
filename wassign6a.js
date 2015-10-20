@@ -118,7 +118,8 @@ var insertDocuments = function(db, callback) {
 
 function getAPIData(){
     if (dataLoaded){
-async.forEach(geocodedAddresses, function(value, i, callback) {
+        var i = 0;
+        async.forEach(geocodedAddresses, function(value, callback) {
 
                  var apiRequest = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + value + '&key=' + apiKey;
                 // console.log(apiRequest);
@@ -152,13 +153,14 @@ async.forEach(geocodedAddresses, function(value, i, callback) {
                     //   test2.push(JSON.parse(body).results[0].geometry.location);
                         obj.meetingLatLong = JSON.parse(body).results[0].geometry.location;
                         meetingInfo.push(obj);
-                        // console.log(obj);
+                        console.log(obj);
+                        i++;
                     }
                 });
                 setTimeout(callback, 300);
                 }, function() {
-                    return meetingInfo;
-                    console.log(obj);
+                    // return meetingInfo;
+                    // console.log(meetingInfo);
                     fs.writeFile('/home/ubuntu/workspace/data/t.txt', JSON.stringify(meetingInfo), function (err) {
 
                         if (err)
