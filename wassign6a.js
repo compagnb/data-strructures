@@ -27,7 +27,7 @@ var aaPage = "http://www.nyintergroup.org/meetinglist/meetinglist.cfm?zone=02&bo
 
 // Enviornment Variables
 // var apiKey = process.env.GMAKEY;
-var apiKey ='AIzaSyA-CKC1h7HYmCnIminO6aSpD0yaAxNTXw4';
+var apiKey = 'AIzaSyA-CKC1h7HYmCnIminO6aSpD0yaAxNTXw4';
 
 
 var meetingInfo = [];
@@ -36,6 +36,7 @@ var cleanedAddresses = []
 var geocodedAddresses = [];
 var locationNames = [];
 var meetingNames = [];
+var cleanedMeetingNames = [];
 var meetingDays = [];
 var meetingTimes = [];
 var meetingTypes = [];
@@ -78,11 +79,11 @@ async.waterfall([
         // parse aa meeting data and add geo-coding
         function parseData(body, callback) {
             getMeetingInfo(body);
-            
+
             // console.log(meetingNames);
             getAPIData();
-            
-            }
+
+        }
     ],
     function(err, res) {
         // feed results to mongo db
@@ -116,59 +117,77 @@ var insertDocuments = function(db, callback) {
         });
 }
 
-function getAPIData(){
-    if (dataLoaded){
+function getAPIData() {
+    // make sure all data has been loaded into arrays
+    if (!dataLoaded) {
+        console.log("data not loaded into arrays yet");
+    }
+    else if (dataLoaded) {
+
+        // make a variable to iterate through arrays
         var i = 0;
+
+        // use async foreach to iterate through geocoded array
         async.forEach(geocodedAddresses, function(value, callback) {
-
-                 var apiRequest = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + value + '&key=' + apiKey;
-                // console.log(apiRequest);
-                
-                var obj = new Object;
-                    obj.meetingName = meetingNames[i];
-                    obj.locationName = locationNames[i];
-                    // obj.meetingDays = meetingDays[i];
-                    // obj.meetingTimes = meetingTimes[i];
-                    // obj.meetingTypes = meetingTypes[i];
-                    // obj.meetingSpecialInterest = meetingSpecialInterests[i];
-                    obj.handiAccess = cleanedHandicapAccessible[i];
-                    obj.specialInfo = cleanedSpecialInfo[i];
-                    obj.origAddress = origAddresses[i];
-                    obj.cleanedAddress = cleanedAddresses[i];
-                    obj.geoCodedAddress = value;
-
+            
+            // plug in geocoded value into api request url
+            var apiRequest = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + value + '&key=' + apiKey;
+            // for testing
+            // console.log(apiRequest);
+            
+            
+            // begin object
+            var obj = new Object;
+            
+            // pull data from arrays
+            obj.meetingName = cleanedMeetingNames[i];
+            obj.locationName = locationNames[i];
+            // obj.meetingDays = meetingDays[i];
+            // obj.meetingTimes = meetingTimes[i];
+            // obj.meetingTypes = meetingTypes[i];
+            // obj.meetingSpecialInterest = meetingSpecialInterests[i];
             // obj.directions =
+            obj.handiAccess = cleanedHandicapAccessible[i];
+            obj.specialInfo = cleanedSpecialInfo[i];
+            obj.origAddress = origAddresses[i];
+            obj.cleanedAddress = cleanedAddresses[i];
+            obj.geoCodedAddress = value;
+
+            // for testing
             // meetingInfo.push(obj);
             // console.log(obj);
-    
 
-                request(apiRequest, function(err, resp, body) {
-                    if (err) {
-                        throw err;
-                    }
+            // make request for lat and long data
+            request(apiRequest, function(err, resp, body) {
+                
+                // if there is an error
+                if (err) {
+                    throw err;
+                }
 
-                    if (JSON.parse(body).status == "ZERO_RESULTS") {
-                        console.log("ZERO RESULTS for" + value);
-                    } else {
+                if (JSON.parse(body).status == "ZERO_RESULTS") {
+                    console.log("ZERO RESULTS for" + value);
+                }
+                else {
                     //   test2.push(JSON.parse(body).results[0].geometry.location);
-                        obj.meetingLatLong = JSON.parse(body).results[0].geometry.location;
-                        meetingInfo.push(obj);
-                        console.log(obj);
-                        i++;
-                    }
-                });
-                setTimeout(callback, 300);
-                }, function() {
-                    // return meetingInfo;
-                    // console.log(meetingInfo);
-                    fs.writeFile('/home/ubuntu/workspace/data/t.txt', JSON.stringify(meetingInfo), function (err) {
+                    obj.meetingLatLong = JSON.parse(body).results[0].geometry.location;
+                    meetingInfo.push(obj);
+                    console.log(obj);
+                    i++;
+                }
+            });
+            setTimeout(callback, 300);
+        }, function() {
+            // return meetingInfo;
+            // console.log(meetingInfo);
+            fs.writeFile('/home/ubuntu/workspace/data/t.txt', JSON.stringify(meetingInfo), function(err) {
 
-                        if (err)
-                        console.log('Error');
-                        console.log('Wrote ' + meetingInfo.length + ' entries to file ' + 'inclass4.txt');
+                if (err)
+                    console.log('Error');
+                console.log('Wrote ' + meetingInfo.length + ' entries to file ' + 'inclass4.txt');
 
-                    });
-                });
+            });
+        });
     }
 }
 
@@ -182,6 +201,8 @@ function getMeetingInfo(body) {
         // meeting names
         meetingNames.push($(elem).find('b').eq(0).text().replace(/\s+/g, ' ').trim());
         
+        cleanedMeetingNames.push(fixMeetingNames(meetingNames[i]));
+
         // location names
         locationNames.push($(elem).find('h4').eq(0).text().trim());
 
@@ -190,7 +211,7 @@ function getMeetingInfo(body) {
 
         // clean addresses
         cleanedAddresses.push(fixAddresses(origAddresses[i]));
-        
+
         // geocoded addresses
         geocodedAddresses.push(fixAddresses(origAddresses[i]).split(' ').join('+'));
 
@@ -210,11 +231,11 @@ function getMeetingInfo(body) {
         handicapAccessible.push($(elem).find('span').eq(0).text().trim());
 
         cleanedHandicapAccessible.push(bool(handicapAccessible[i]));
-        
+
         // console.log(cleanedHandicapAccessible[i]);
 
     });
-    
+
     dataLoaded = true;
 }
 
