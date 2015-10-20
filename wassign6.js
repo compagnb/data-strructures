@@ -18,7 +18,7 @@ var fs = require("fs"); // no need to install it is a core module
 // variables for mongodb
 var url = 'mongodb://localhost:27017/aameetings';
 
-// live link of aa page 
+// live link of aa page
 var aaPage = "http://www.nyintergroup.org/meetinglist/meetinglist.cfm?zone=02&borough=M"
     // file link for testing
     // var fileContent = fs.readFileSync('/home/ubuntu/workspace/data/aameetinglist02M.txt');
@@ -40,15 +40,17 @@ var meetingDays = [];
 var meetingTimes = [];
 var meetingTypes = [];
 var handicapAccessible = [];
-var specialInfo = [];;
+var specialInfo = [];
 var directions = [];
+
+var obj;
 
 
 async.waterfall([
 
         // check if mongo db is running
         function(callback) {
-            // Use connect method to connect to the Server 
+            // Use connect method to connect to the Server
             MongoClient.connect(url, function(err, db) {
                 // if there is a connection error print error
                 assert.equal(null, err);
@@ -95,9 +97,9 @@ async.waterfall([
 
 // function to insert info into documents
 var insertDocuments = function(db, callback) {
-    // Get the documents collection 
+    // Get the documents collection
     var collection = db.collection('aameetings_area2');
-    // Insert some documents 
+    // Insert some documents
     collection.insert(
         meetingInfo,
         function(err, result) {
@@ -118,26 +120,25 @@ function getMeetingInfo(body) {
 
     // get info from tables
     $('table[cellpadding=5]').find('tbody').find('tr').each(function(i, elem) {
-        
-            // make an api request using the addy pulled in and the api key
-            var apiRequest = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + getGeoCodedAddress[i] + '&key=' + apiKey;
 
-            var obj = new Object;
+            obj = new Object;
 
             obj.meetingName = getCleanedName(i);
             obj.locationName = getCleanedLocationName(i);
             obj.origAddress = getOriginalAddress(i);
             obj.cleanedAddress = getCleanedAddress(i);
-            obj.meetingLatLong = getLatLong(i);
+            obj.geoCodedAddress = getGeoCodedAddress(i);
+            
             // obj.meetingDays = getMeetingDays(i);
             // obj.meetingTimes = getMeetingTimes(i);
             // obj.meetingTypes = getMeetingTypes(i);
             // obj.meetingSpecialInterest = getMeetingSI(i);
             obj.handiAccess = getAccessible(i);
             obj.specialInfo = getMeetingInfo(i);
-            // obj.directions = 
-            meetingInfo.push(obj);
-            console.log(obj);
+
+            // obj.directions =
+            // meetingInfo.push(obj);
+            // console.log(obj);
 
 
             function getCleanedName(i) {
@@ -209,26 +210,47 @@ function getMeetingInfo(body) {
                 return bool(handicapAccessible[i]);
             }
 
-            function getLatLong(i) {
-                
-                // for testing purposes
-                // console.log (apiRequest);
+    });
+    getLatLong();
+}
 
-                request(apiRequest, function(error, resp, body) {
-                    if (error) {
-                        throw error;
-                    }
+function getLatLong() {
+     // get info from tables
+     var test = [];
+    $('table[cellpadding=5]').find('tbody').find('tr').each(function(i, elem) {
+        test.push($(elem).find('td').eq(0).html().split('<br>')[2].trim());
+        // console.log(test[i]);
+    });
+    
+    
+    async.eachSeries(test, function(value, callback) {
+    var apiRequest = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + fixAddresses(value).split(' ').join('+') + '&key=' + apiKey;
+    // console.log(apiRequest);
 
-                    if (JSON.parse(body).status == "ZERO_RESULTS") {
-                        return "ZERO RESULTS for" ;
-                    }
-                    else {
-                        return JSON.parse(body).results[0].geometry.location;
-                    }
-                });
-            } setTimeout(300);
+        request(apiRequest, function(err, resp, body) {
+        if (err) {
+            throw err;
+        }
 
-         });
+        if (JSON.parse(body).status == "ZERO_RESULTS") {
+            console.log("ZERO RESULTS for" + value);
+        } else {
+           return  obj.meetingLatLong = JSON.parse(body).results[0].geometry.location;
+        }
+    });
+    setTimeout(callback, 300);
+}, function() {
+     fs.writeFile('/home/ubuntu/workspace/data/t.txt', JSON.stringify(meetingInfo), function (err) {
+
+         if (err)
+         return console.log('Error');
+         
+         meetingInfo.push(obj);
+           console.log(obj);
+           console.log('Wrote ' + meetingInfo.length + ' entries to file ' + 'inclass4.txt');
+
+     });
+});
 
 }
 
