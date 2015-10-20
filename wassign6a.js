@@ -36,15 +36,16 @@ var cleanedAddresses = []
 var geocodedAddresses = [];
 var locationNames = [];
 var meetingNames = [];
-var meetingSpecs = [];
 var meetingDays = [];
 var meetingTimes = [];
 var meetingTypes = [];
+var meetingSpecialInterests = [];
 var handicapAccessible = [];
 var cleanedHandicapAccessible = [];
 var specialInfo = [];
 var cleanedSpecialInfo = [];
 var directions = [];
+var dataLoaded = false;
 
 async.waterfall([
 
@@ -78,39 +79,9 @@ async.waterfall([
         function parseData(body, callback) {
             getMeetingInfo(body);
             
-            async.forEach(geocodedAddresses, function(value, i, callback) {
-
-                 var apiRequest = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + value + '&key=' + apiKey;
-                // console.log(apiRequest);
-    
-
-                request(apiRequest, function(err, resp, body) {
-                    if (err) {
-                        throw err;
-                    }
-
-                    if (JSON.parse(body).status == "ZERO_RESULTS") {
-                        console.log("ZERO RESULTS for" + value);
-                    } else {
-                    //   test2.push(JSON.parse(body).results[0].geometry.location);
-                        var meetingLatLong = JSON.parse(body).results[0].geometry.location;
-                        // meetingInfo.push(obj);
-                        console.log(meetingLatLong);
-                    }
-                });
-                setTimeout(callback, 300);
-                }, function() {
-                    return meetingInfo;
-                    console.log(obj);
-                    fs.writeFile('/home/ubuntu/workspace/data/t.txt', JSON.stringify(meetingInfo), function (err) {
-
-                        if (err)
-                        console.log('Error');
-                        console.log('Wrote ' + meetingInfo.length + ' entries to file ' + 'inclass4.txt');
-
-                    });
-                });
-
+            // console.log(meetingNames);
+            getAPIData();
+            
             }
     ],
     function(err, res) {
@@ -143,6 +114,60 @@ var insertDocuments = function(db, callback) {
             console.log("Inserted " + meetingInfo.length + " documents into the document collection");
             callback(result);
         });
+}
+
+function getAPIData(){
+    if (dataLoaded){
+async.forEach(geocodedAddresses, function(value, i, callback) {
+
+                 var apiRequest = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + value + '&key=' + apiKey;
+                // console.log(apiRequest);
+                
+                var obj = new Object;
+                    obj.meetingName = meetingNames[i];
+                    obj.locationName = locationNames[i];
+                    // obj.meetingDays = meetingDays[i];
+                    // obj.meetingTimes = meetingTimes[i];
+                    // obj.meetingTypes = meetingTypes[i];
+                    // obj.meetingSpecialInterest = meetingSpecialInterests[i];
+                    obj.handiAccess = cleanedHandicapAccessible[i];
+                    obj.specialInfo = cleanedSpecialInfo[i];
+                    obj.origAddress = origAddresses[i];
+                    obj.cleanedAddress = cleanedAddresses[i];
+                    obj.geoCodedAddress = value;
+
+            // obj.directions =
+            // meetingInfo.push(obj);
+            // console.log(obj);
+    
+
+                request(apiRequest, function(err, resp, body) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    if (JSON.parse(body).status == "ZERO_RESULTS") {
+                        console.log("ZERO RESULTS for" + value);
+                    } else {
+                    //   test2.push(JSON.parse(body).results[0].geometry.location);
+                        obj.meetingLatLong = JSON.parse(body).results[0].geometry.location;
+                        meetingInfo.push(obj);
+                        // console.log(obj);
+                    }
+                });
+                setTimeout(callback, 300);
+                }, function() {
+                    return meetingInfo;
+                    console.log(obj);
+                    fs.writeFile('/home/ubuntu/workspace/data/t.txt', JSON.stringify(meetingInfo), function (err) {
+
+                        if (err)
+                        console.log('Error');
+                        console.log('Wrote ' + meetingInfo.length + ' entries to file ' + 'inclass4.txt');
+
+                    });
+                });
+    }
 }
 
 
@@ -187,6 +212,8 @@ function getMeetingInfo(body) {
         // console.log(cleanedHandicapAccessible[i]);
 
     });
+    
+    dataLoaded = true;
 }
 
 
