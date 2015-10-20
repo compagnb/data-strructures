@@ -32,6 +32,7 @@ var apiKey ='AIzaSyA-CKC1h7HYmCnIminO6aSpD0yaAxNTXw4';
 
 var meetingInfo = [];
 var origAddresses = [];
+var cleanedAddresses = []
 var geocodedAddresses = [];
 var locationNames = [];
 var meetingNames = [];
@@ -40,12 +41,10 @@ var meetingDays = [];
 var meetingTimes = [];
 var meetingTypes = [];
 var handicapAccessible = [];
+var cleanedHandicapAccessible = [];
 var specialInfo = [];
+var cleanedSpecialInfo = [];
 var directions = [];
-    
-
-var obj;
-
 
 async.waterfall([
 
@@ -78,22 +77,56 @@ async.waterfall([
         // parse aa meeting data and add geo-coding
         function parseData(body, callback) {
             getMeetingInfo(body);
-        }
+            
+            async.forEach(geocodedAddresses, function(value, i, callback) {
+
+                 var apiRequest = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + value + '&key=' + apiKey;
+                // console.log(apiRequest);
+    
+
+                request(apiRequest, function(err, resp, body) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    if (JSON.parse(body).status == "ZERO_RESULTS") {
+                        console.log("ZERO RESULTS for" + value);
+                    } else {
+                    //   test2.push(JSON.parse(body).results[0].geometry.location);
+                        var meetingLatLong = JSON.parse(body).results[0].geometry.location;
+                        // meetingInfo.push(obj);
+                        console.log(meetingLatLong);
+                    }
+                });
+                setTimeout(callback, 300);
+                }, function() {
+                    return meetingInfo;
+                    console.log(obj);
+                    fs.writeFile('/home/ubuntu/workspace/data/t.txt', JSON.stringify(meetingInfo), function (err) {
+
+                        if (err)
+                        console.log('Error');
+                        console.log('Wrote ' + meetingInfo.length + ' entries to file ' + 'inclass4.txt');
+
+                    });
+                });
+
+            }
     ],
     function(err, res) {
         // feed results to mongo db
-        // MongoClient.connect(url, function(err, db) {
-        //     // if there isn't a connection print error
-        //     assert.equal(null, err);
-        //     // log in console if you can connect to server
-        //     console.log("Connected correctly to server");
+        MongoClient.connect(url, function(err, db) {
+            // if there isn't a connection print error
+            assert.equal(null, err);
+            // log in console if you can connect to server
+            console.log("Connected correctly to server");
 
-        //     insertDocuments(db, function() {
+            // insertDocuments(db, function() {
 
-        //     // close database connection
-        //     db.close();
-        //     });
-        // });
+            // close database connection
+            // db.close();
+            // });
+        });
     });
 
 // function to insert info into documents
@@ -113,157 +146,51 @@ var insertDocuments = function(db, callback) {
 }
 
 
-// get meeting info
-function getMeetingInfo(body) {
-   var test2 = [];  
-    
 
+function getMeetingInfo(body) {
     // use cheerio to load the content
     $ = cheerio.load(body);
 
-    getLatLong();
-    
-    // get info from tables
     $('table[cellpadding=5]').find('tbody').find('tr').each(function(i, elem) {
+        // meeting names
+        meetingNames.push($(elem).find('b').eq(0).text().replace(/\s+/g, ' ').trim());
+        
+        // location names
+        locationNames.push($(elem).find('h4').eq(0).text().trim());
 
-            obj = new Object;
+        // addresses
+        origAddresses.push($(elem).find('td').eq(0).html().split('<br>')[2].trim());
 
-            obj.meetingName = getCleanedName(i);
-            obj.locationName = getCleanedLocationName(i);
-            obj.origAddress = getOriginalAddress(i);
-            obj.cleanedAddress = getCleanedAddress(i);
-            obj.geoCodedAddress = getGeoCodedAddress(i);
-            obj.meetingLatLong = test2[i];
-            // obj.meetingDays = getMeetingDays(i);
-            // obj.meetingTimes = getMeetingTimes(i);
-            // obj.meetingTypes = getMeetingTypes(i);
-            // obj.meetingSpecialInterest = getMeetingSI(i);
-            obj.handiAccess = getAccessible(i);
-            obj.specialInfo = getMeetingInfo(i);
+        // clean addresses
+        cleanedAddresses.push(fixAddresses(origAddresses[i]));
+        
+        // geocoded addresses
+        geocodedAddresses.push(fixAddresses(origAddresses[i]).split(' ').join('+'));
 
-            // obj.directions =
-            meetingInfo.push(obj);
-            // console.log(obj);
+        // days
 
+        // times
 
-            function getCleanedName(i) {
-                // meeting names
-                meetingNames.push($(elem).find('b').eq(0).text().replace(/\s+/g, ' ').trim());
+        // meeting type
 
-                return fixMeetingNames(meetingNames[i]);
-            }
+        // special interest
 
-            function getCleanedLocationName(i) {
-                // location names
-                locationNames.push($(elem).find('h4').eq(0).text().trim());
+        // special info/motto
+        specialInfo.push($(elem).find('.detailsBox').eq(0).text().trim());
 
-                return bool(locationNames[i]);
-            }
+        cleanedSpecialInfo.push(bool(specialInfo[i]));
 
-            function getOriginalAddress(i) {
-                // addresses
-                origAddresses.push($(elem).find('td').eq(0).html().split('<br>')[2].trim());
+        handicapAccessible.push($(elem).find('span').eq(0).text().trim());
 
-                return origAddresses[i];
-            }
-
-            function getCleanedAddress(i) {
-                // addresses
-
-                return fixAddresses(origAddresses[i]);
-            }
-
-            function getGeoCodedAddress(i) {
-                return fixAddresses(origAddresses[i]).split(' ').join('+');
-
-            }
-
-            function getMeetingDays(i) {
-                // days
-
-            }
-
-            function getMeetingTimes(i) {
-                // times
-
-            }
-
-            function getMeetingTypes(i) {
-                // meeting type
-
-            }
-
-            function getMeetingSI(i) {
-                // special interest
-
-            }
-
-            function getMeetingInfo(i) {
-                // special info/motto
-                specialInfo.push($(elem).find('.detailsBox').eq(0).text().trim());
-
-                // return cleaned
-                return bool(specialInfo[i]);
-
-            }
-
-            function getAccessible(i) {
-                // handi-able
-                handicapAccessible.push($(elem).find('span').eq(0).text().trim());
-
-                // return cleaned
-                return bool(handicapAccessible[i]);
-            }
+        cleanedHandicapAccessible.push(bool(handicapAccessible[i]));
+        
+        // console.log(cleanedHandicapAccessible[i]);
 
     });
-    
-    
-   
 }
 
-function getLatLong() {
-     // get info from tables
-     var test = [];
-     
 
-     
-    $('table[cellpadding=5]').find('tbody').find('tr').each(function(i, elem) {
-        test.push($(elem).find('td').eq(0).html().split('<br>')[2].trim());
-        // console.log(test[i]);
-    });
-    
-    
-    async.eachSeries(test, function(value, callback) {
-    var apiRequest = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + fixAddresses(value).split(' ').join('+') + '&key=' + apiKey;
-    // console.log(apiRequest);
 
-        request(apiRequest, function(err, resp, body) {
-        if (err) {
-            throw err;
-        }
-
-        if (JSON.parse(body).status == "ZERO_RESULTS") {
-            console.log("ZERO RESULTS for" + value);
-        } else {
-        //   test2.push(JSON.parse(body).results[0].geometry.location); 
-          return obj.meetingLatLong = JSON.parse(body).results[0].geometry.location;
-            // console.log(obj.meetingLatLong);
-        }
-    });
-    setTimeout(callback, 300);
-}, function() {
-    
-            console.log(obj);
-     fs.writeFile('/home/ubuntu/workspace/data/t.txt', JSON.stringify(meetingInfo), function (err) {
-    
-         if (err)
-         return console.log('Error');
-           console.log('Wrote ' + meetingInfo.length + ' entries to file ' + 'inclass4.txt');
-
-     });
-});
-
-}
 
 
 
