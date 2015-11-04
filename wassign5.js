@@ -73,17 +73,17 @@ $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
 // meeting specs
 
 
-// $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
-//   meetingSpecs.push( $(elem).find('td').eq(1).html().replace(/\s\s+/g, "").split("<br><br>"));
+$('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
+  meetingSpecs.push( $(elem).find('td').eq(1).html().replace(/\s\s+/g, "").split("<br><br>"));
   
-//   var type = meetingSpecs[i].toString().match(/<b>Meeting Type<\/b>/gi);
-//   var si = "<b>Special Interest</b>";
+  var type = meetingSpecs[i].toString().match(/<b>Meeting Type<\/b>/gi);
+  var si = "<b>Special Interest</b>";
   
-//   if (meetingSpecs[i].toString().match(type)){
-//     meetingTypes.push(meetingSpecs[i].toString().replace(/.*<b>Meeting Type<\/b>([^<]*).*/, "$1"));
-//   }
+  if (meetingSpecs[i].toString().match(type)){
+    meetingTypes.push(meetingSpecs[i].toString().replace(/.*<b>Meeting Type<\/b>([^<]*).*/, "$1"));
+  }
   
-//   meetingDays.push( );
+  meetingDays.push( );
   
   
 //   meetingTimes.push(meetingSpecs[i].toString().match(/\d{1,2}:\d{1,2} [aApP][mM]/g) );
