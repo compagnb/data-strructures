@@ -41,7 +41,7 @@ var $ = cheerio.load(fileContent);
 // Addresses!!!
 $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
    addresses.push( $(elem).find('td').eq(0).html().split('<br>')[2].trim()); 
-  console.log(addresses[i]);
+//   console.log(addresses[i]);
    
    // cleaned addresses
 //   console.log(fixAddresses(addresses[i]) );
@@ -72,48 +72,105 @@ $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
 
 // meeting specs
 
+// $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
+//     meetingSpecs.push($(elem).find('td').eq(1).text().trim());
+    
+//     for (var j in meetingSpecs) {
+//         meetingSpecs[j] = meetingSpecs[j].toString().replace(/[\r\n|\n| \t]+/g, " ");
+//         meetingSpecs[j] = meetingSpecs[j].split("           ");
+//         for (var q in meetingSpecs[j]) {
+//             meetingSpecs[j]= meetingSpecs[j][q].trim();
+        
+//             meetingDays = meetingSpecs[j][q].substr(0, meetingSpecs[j][q].indexOf(' From'));
+//             meetingTimes = meetingSpecs[j][q].substr(meetingSpecs[j][q].indexOf(' to ') -8, 8);
+//             var endTimes = [];
+//             endTimes = meetingSpecs[j][q].substr(meetingSpecs[j][q].indexOf(' to ')+3, 9);
+//             // meetingTypes = meetingSpecs[j][q].substr(meetingSpecs[j][q].indexOf('=')-3, meetingSpecs[j][q].indexOf('meeting'));
+//             // meetingInterests =  meetingSpecs[j][q].substr(meetingSpecs[j][q].indexOf('Special Interest '), 9);
+//         }
+//     }
+    
+//     console.log(meetingDays);
+// });
 
-$('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
-  meetingSpecs.push( $(elem).find('td').eq(1).html().replace(/\s\s+/g, "").split("<br><br>"));
+
+// $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
+//   meetingSpecs.push( $(elem).find('td').eq(1).html().replace(/>\s*/g,">").replace(/\s*</g,"<").split("<br><br>"));
+
+//     for (var j=0; j < meetingSpecs.length-1; j++) {
+//          var oneMeetingTime = meetingSpecs[j].toString().split("b>");
+//          var theDeets = new Object;
+//          meetingDays[j] = oneMeetingTime[1].substr(0, oneMeetingTime[1].indexOf(' From'));
+        
+         
+//         console.log(meetingDays[j]);
+         
+         
+         
+//     }
+//     console.log("---------" + locationNames[i])
+
   
-  var type = meetingSpecs[i].toString().match(/<b>Meeting Type<\/b>/gi);
-  var si = "<b>Special Interest</b>";
+ 
   
-  if (meetingSpecs[i].toString().match(type)){
-    meetingTypes.push(meetingSpecs[i].toString().replace(/.*<b>Meeting Type<\/b>([^<]*).*/, "$1"));
-  }
+// });
+
+//   $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){ 
+//     meetingSpecs.push( $(elem).find('td').eq(1).text().trim());
+//     meetingSpecs[i] = meetingSpecs[i].replace(/[ \t]+/g, " ");
+//     meetingSpecs[i] = meetingSpecs[i].replace(/[\r\n|\n]/g, " ").split("           ");
+
+//     var type = meetingSpecs[i].toString().match(/<b>Meeting Type</b>/gi);
+//     var si = "<b>Special Interest</b>";
   
-  meetingDays.push( );
+//   if (meetingSpecs[i].toString().match(type)){
+//     meetingTypes.push(meetingSpecs[i].toString().replace(/.*<b>Meeting Type<\/b>([^<]*).*/, "$1"));
+    
+//   }
+//   console.log(meetingTypes[i]);
+//     });
   
+//   $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
+//   meetingSpecs.push( $(elem).find('td').eq(1).html().replace(/\s\s+/g, "").split("<br><br>"));
   
 //   meetingTimes.push(meetingSpecs[i].toString().match(/\d{1,2}:\d{1,2} [aApP][mM]/g) );
   
-//   console.log(meetingTypes[i]);
+  
+//   });
+//   console.log(meetingTimes);
+  
+//     $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
+//     // meetingSpecs.push( $(elem).find('td').eq(1).html().replace(/\s\s+/g, "").split("<br><br>"));
 
 //     test.push(meetingSpecs[i].toString().replace(/^\s+|\s+$/gm,'').trim());
 //     // meetingTimes.push(meetingSpecs[i].substring(meetingSpecs[i].indexOf("to")+8, test[i].indexOf("to")-8)));
     
+//     meetingTypes.push(test[i].substring(test[i].indexOf("Meeting Type"), test[i].indexOf("meeting")));
     
+//       meetingSpecs.push( $(elem).find('td').eq(1).html());
 //     // console.log(meetingSpecs[1].toString().replace(/^\s+|\s+$/gm,'').trim());
 //     // console.log("times: " + test[i].substring(test[i].indexOf("From"), test[i].indexOf("Meeting Type")));
-//     // console.log("meeting types: " + test[i].substring(test[i].indexOf("Meeting Type")));
+//     console.log("meeting types: " + meetingTypes[i].replace("</b>", ""));
 //     console.log("------------------" );
-//   console.log(test[i]);
-//   console.log(meetingTimes[i]);
+//   console.log(meetingSpecs[i]);
+// //   console.log(meetingTimes[i]);
    
 //   console.log("days: "  );
-//   console.log("times: " + meetingSpecs[i].toString().substring(meetingSpecs[i].indexOf('from'), meetingSpecs[i].indexOf('Meeting Type')));
-// //   console.log("Special Interest: " + meetingSpecs[i].toString().substring(meetingSpecs[i].indexOf('Special Interest')));
-//   console.log("meeting type: " + meetingSpecs[i].toString().substring(meetingSpecs[i].indexOf('Meeting Type'), meetingSpecs[i].indexOf('meeting')));
+//   console.log("times: " );
+//   console.log("Special Interest: " );
+//   console.log("meeting type: " );
 //  });
 
 
-// times
-$('table[cellpadding=5]').find('tbody').find('tr').next('td').each (function (i, elem){
-   meetingTimes.push( $(elem).find('td').eq(1).text()); 
+// // times
+// $('table[cellpadding=5]').find('tbody').find('tr').next('td').each (function (i, elem){
+//   meetingTimes.push( $(elem).find('td').eq(1).text()); 
+//   meetingTimes[i].replace(/[ \t]+/g, " ");
+// //   meetingTimes[i].replace(/[\r\n|\n]/g, " ");
    
-//   console.log(meetingTimes[i]);
-});
+// //   console.log(meetingTimes);
+// });
+// console.log(meetingTimes);
 
 // meeting types
 
