@@ -140,8 +140,7 @@ function getMeetingInfo(body) {
         
         handicapAccessible.push($(elem).find('span').eq(0).text().trim());
         
-        // latLong.push(getLatLong(i));
-
+        
         
         for (var j = 0; j < meetingSpecs.length-1; j++) {     
 
@@ -154,7 +153,7 @@ function getMeetingInfo(body) {
             obj.origAddress = origAddresses[i];
             obj.cleanedAddress = fixAddresses(origAddresses[i]);
             obj.geoCodedAddress = fixAddresses(origAddresses[i]).split(' ').join('+');
-            
+
             
             obj.meetingDeets = meetingSpecs[i];
             var oneMeeting = meetingSpecs[j].toString().split("b>");
@@ -184,53 +183,42 @@ function getMeetingInfo(body) {
             obj.handiAccess = bool(handicapAccessible[i]);
             obj.specialInfo = bool(specialInfo[i]);
             
-
-            
-
             // obj.directions =
-            meetingInfo.push(obj);
-            console.log(obj);
+            // meetingInfo.push(obj);
+            //console.log(obj);
 
         }
-
-    });
-    
-    
-   
-}
-
-
-function getLatLong(i) {
     
     async.eachSeries(origAddresses[i], function(value, callback) {
-    var apiRequest = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + fixAddresses(origAddresses[i]).split(' ').join('+') + '&key=' + apiKey;
-    // console.log(apiRequest);
+        var apiRequest = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + fixAddresses(origAddresses[i]).split(' ').join('+') + '&key=' + apiKey;
+        //console.log(apiRequest);
 
         request(apiRequest, function(err, resp, body) {
-        if (err) {
-            throw err;
-        }
+            if (err) {
+                throw err;
+            }
 
-        if (JSON.parse(body).status == "ZERO_RESULTS") {
-            console.log("ZERO RESULTS for" + value);
-        } else {
-          //latLong.push(JSON.parse(body).results[0].geometry.location); 
-            return JSON.parse(body).results[0].geometry.location;
-            // console.log(obj.meetingLatLong);
-        }
+            if (JSON.parse(body).status == "ZERO_RESULTS") {
+                console.log("ZERO RESULTS for" + value);
+            } else {
+                return  obj.meetingLatLong = JSON.parse(body).results[0].geometry.location;
+                meetingInfo.push(obj);
+                // console.log(obj.meetingLatLong);
+            }
+            
     });
     setTimeout(callback, 300);
 }, function() {
-    return latLong;
-    //         console.log(obj);
+    
+    console.log(obj);
     //  fs.writeFile('/home/ubuntu/workspace/data/t.txt', JSON.stringify(meetingInfo), function (err) {
     
     //      if (err)
     //      return console.log('Error');
     //       console.log('Wrote ' + meetingInfo.length + ' entries to file ' + 'inclass4.txt');
 
-    //  });
-});
+         });
+    });
 
 }
 
@@ -337,7 +325,10 @@ function cleanHrs(time){
 }
 
 function cleanMins(time){
-
+    
+    // pull the AM or PM out of the time data
+    var m = time.substr(time.length-2,time.length);
+   
    // separate the hrs and mins
     var hrMins = time.substr(0, time.indexOf(':')).trim();
     

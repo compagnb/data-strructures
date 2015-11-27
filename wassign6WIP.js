@@ -41,7 +41,11 @@ var $ = cheerio.load(fileContent);
 // Addresses!!!
 $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
    addresses.push( $(elem).find('td').eq(0).html().split('<br>')[2].trim()); 
-//   console.log(addresses[i]);
+   
+  var addyInfo = [];
+  addyInfo[i] = addresses[i].substr(addresses[i].indexOf(',')+2, addresses[i].length).trim();
+  addyInfo[i].replace(/[&\/\\#,+()$~%.'":*?<>{}]/g,"");
+  console.log(addyInfo[i]);
    
    // cleaned addresses
 //   console.log(fixAddresses(addresses[i]) );
