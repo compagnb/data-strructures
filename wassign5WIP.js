@@ -12,7 +12,7 @@ var MongoClient = require('mongodb').MongoClient
   , assert = require('assert');
   
 
-var dbName = 'aaMeetings';
+var dbName = 'aatest';
 var collName = 'aameetings_area2';
 
 // Connection URL
@@ -26,7 +26,27 @@ MongoClient.connect(url, function(err, db) {
 
     var collection = db.collection(collName);
 
-    collection.aggregate([{ $match : { meetingDay: "Tuesdays"}},{ $match: { $or: [ { meetingTimes: { $gt: 7, $lt: 90 } } ]).toArray(function(err, docs) {
+    collection.aggregate([
+        
+    //{ $match: { meetingDayNum: 2 } 
+    
+    { $match: { $or: [ { meetingDayNum: 1 }, { meetingStartHr: { $gte: 19 } } ,{ meetingDayNum: 2 }, { meetingStartHr: { $lte: 19 } } ] } },
+    { $group: { _id: null, count: { $sum: 1 } } 
+        
+    //     {$group: {_id : "$cleanedAddress",
+    //     meetingName: {$push: "$meetingName"}, 
+    //     locationName: {$push: "$locationName"},
+    //     addressMoreInfo: {$push: "$addressMoreInfo"},
+    //     zipcode: {$push: "$zipcode"},
+    //     lat: {$push: "$latLong.lat"},
+    //     long: {$push: "$latLong.long"},
+    //     meetingType: {$push: "$meetingType"},
+    //     specialInterest: {$push: "$SpecialInterest"},
+    //     handiAccess: {$push: "$handiAccess"},
+    //     specialInfo: {$push: "$specialInfo"},
+    // } 
+        
+    }]).toArray(function(err, docs) {
         if (err) {console.log(err)}
         
         else {
@@ -35,5 +55,6 @@ MongoClient.connect(url, function(err, db) {
         db.close();
         
     });
+
 
 }); //MongoClient.connect

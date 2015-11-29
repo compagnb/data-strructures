@@ -18,8 +18,10 @@ var fs = require("fs"); // no need to install it is a core module
 // variables for mongodb
 var url = 'mongodb://localhost:27017/aatest';
 
+var zones = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"];
+var bourough = "M";
 // live link of aa page
-var aaPage = "http://www.nyintergroup.org/meetinglist/meetinglist.cfm?zone=02&borough=M"
+var aaPage = "http://www.nyintergroup.org/meetinglist/meetinglist.cfm?zone=" + zones[1] +"&borough=" +bourough;
     // file link for testing
     // var fileContent = fs.readFileSync('/home/ubuntu/workspace/data/aameetinglist02M.txt');
     // use cheerio to load the content
@@ -46,6 +48,7 @@ var handicapAccessible = [];
 var specialInfo = [];
 var directions = [];
 var googleapis = [];
+
 
 var obj;
 
@@ -84,7 +87,7 @@ async.waterfall([
         },
     ],
     function(meetinginfo, err, res) {
-
+        
 
     });
 
@@ -367,7 +370,7 @@ function cleanHrs(time) {
 
 function cleanMins(time) {
     var mins = time.substr(time.indexOf(':') + 1, time.indexOf(':') + 2).trim();
-    return mins;
+    return mins *1;
 }
 
 function cleanMoreAddyInfo(moreInfo){

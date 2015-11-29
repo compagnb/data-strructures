@@ -17,7 +17,7 @@ MongoClient.connect(url, function(err, db) {
 
     var collection = db.collection(collName);
 
-    collection.aggregate([{$group: {_id : "$location",storename: {$push: "$storeName"}, products: {$push: "products"}} }]).toArray(function(err, docs) {
+    collection.aggregate([{$group: {_id : "$cleanedAddress",meetingName: {$push: "$storeName"}, products: {$push: "products"}} }]).toArray(function(err, docs) {
         if (err) {console.log(err)}
         
         else {
