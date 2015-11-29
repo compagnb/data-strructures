@@ -30,21 +30,22 @@ MongoClient.connect(url, function(err, db) {
         
     //{ $match: { meetingDayNum: 2 } 
     
-    { $match: { $or: [ { meetingDayNum: 1 }, { meetingStartHr: { $gte: 19 } } ,{ meetingDayNum: 2 }, { meetingStartHr: { $lte: 19 } } ] } },
-    { $group: { _id: null, count: { $sum: 1 } } 
-        
-    //     {$group: {_id : "$cleanedAddress",
-    //     meetingName: {$push: "$meetingName"}, 
-    //     locationName: {$push: "$locationName"},
-    //     addressMoreInfo: {$push: "$addressMoreInfo"},
-    //     zipcode: {$push: "$zipcode"},
-    //     lat: {$push: "$latLong.lat"},
-    //     long: {$push: "$latLong.long"},
-    //     meetingType: {$push: "$meetingType"},
-    //     specialInterest: {$push: "$SpecialInterest"},
-    //     handiAccess: {$push: "$handiAccess"},
-    //     specialInfo: {$push: "$specialInfo"},
-    // } 
+    { $match: { meetingDay: "Tuesdays" } },
+    { $match: { $or: [ { meetingStartHr: { $gt: 0, $lt: 19 } } ]}},
+    {$group: {_id : "$cleanedAddress",
+        meetingName: {$push: "$meetingName"}, 
+        locationName: {$push: "$locationName"},
+        addressMoreInfo: {$push: "$addressMoreInfo"},
+        zipcode: {$push: "$zipcode"},
+        lat: {$push: "$latLong.lat"},
+        long: {$push: "$latLong.long"},
+        meetingType: {$push: "$meetingType"},
+        specialInterest: {$push: "$SpecialInterest"},
+        handiAccess: {$push: "$handiAccess"},
+        specialInfo: {$push: "$specialInfo"},
+        meetingDay: {$push: "$meetingDay"},
+        meetingStartTime: {$push: "meetingStartTime"}
+    } 
         
     }]).toArray(function(err, docs) {
         if (err) {console.log(err)}
