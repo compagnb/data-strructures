@@ -183,7 +183,7 @@ function getMeetingInfo(body) {
                 
                 for (var j in meetingSpecs) {
                     meetingSpecs[j] = meetingSpecs[j].toString().replace(/[\r\n|\n| \t]+/g, " ");
-        meetingSpecs[j] = meetingSpecs[j].split("           ");
+                    meetingSpecs[j] = meetingSpecs[j].split("           ");
                     for (var q in meetingSpecs[j]) {
                          meetingSpecs[j][q] = meetingSpecs[j][q].trim();
                          meetingDays = meetingSpecs[j][q].substr(0, meetingSpecs[j][q].indexOf(' From'));

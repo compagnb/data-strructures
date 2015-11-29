@@ -1,5 +1,5 @@
 // --------------------------------------------
-// weekly assignment 6
+// weekly assignment 6E (Modified 11/26)
 //
 // barbara compagnoni
 // fall 2015
@@ -45,6 +45,7 @@ var meetingTypes = [];
 var handicapAccessible = [];
 var specialInfo = [];
 var directions = [];
+var googleapis = [];
 
 var obj;
 
@@ -84,36 +85,8 @@ async.waterfall([
     ],
     function(meetinginfo, err, res) {
 
-        // feed results to mongo db
-        // MongoClient.connect(url, function(err, db) {
-        //     // if there isn't a connection print error
-        //     assert.equal(null, err);
-        //     // log in console if you can connect to server
-        //     console.log("Connected correctly to server");
 
-        //     insertDocuments(db, function() {
-
-        //     // close database connection
-        //     db.close();
-        //     });
-        // });
     });
-
-// function to insert info into documents
-var insertDocuments = function(db, callback) {
-    // Get the documents collection
-    var collection = db.collection('aameetings_area2');
-    // Insert some documents
-    collection.insert(
-        meetingInfo,
-        function(err, result) {
-            assert.equal(err, null);
-            assert.equal(meetingInfo.length, result.result.n);
-            assert.equal(meetingInfo.length, result.ops.length);
-            console.log("Inserted " + meetingInfo.length + " documents into the document collection");
-            callback(result);
-        });
-}
 
 
 // get meeting info
@@ -127,29 +100,22 @@ function getMeetingInfo(body) {
     $('table[cellpadding=5]').find('tbody').find('tr').each(function(i, elem) {
 
         meetingSpecs.push($(elem).find('td').eq(1).html().replace(/>\s*/g, ">").replace(/\s*</g, "<").split("<br><br>"));
-
         meetingNames.push($(elem).find('b').eq(0).text().replace(/\s+/g, ' ').trim());
-
         locationNames.push($(elem).find('h4').eq(0).text().trim());
-
         origAddresses.push($(elem).find('td').eq(0).html().split('<br>')[2].trim());
-        
         addyMoreInfo.push(origAddresses[i].substr(origAddresses[i].indexOf(',')+2, origAddresses[i].length).trim());
-
         specialInfo.push($(elem).find('.detailsBox').eq(0).text().trim());
-
         handicapAccessible.push($(elem).find('span').eq(0).text().trim());
     });
 
     //console.log(addyMoreInfo);
     latLong.push(getLatLong(origAddresses));
-   // return latLong;
-    // console.log(latLong);
 
 }
 
 function getLatLong(origAddresses) {
     var geolocation;
+    var zipcode;
     async.eachSeries(origAddresses, function(value, callback) {
         
         var apiRequest = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + fixAddresses(value).split(' ').join('+') + '&key=' + apiKey;
@@ -167,7 +133,9 @@ function getLatLong(origAddresses) {
                 geolocation = JSON.parse(body).results[0].geometry.location;
                 //console.log(JSON.parse(body).results[0].geometry.location);
                 //return JSON.parse(body).results[0].geometry.location;
-                // console.log(obj.meetingLatLong);
+                zipcode = extractFromAdress(JSON.parse(body).results[0].address_components, "postal_code");
+                zipcodes.push(zipcode);
+                googleapis.push(apiRequest);
                 latLong.push(geolocation);
             }
         });
@@ -177,8 +145,61 @@ function getLatLong(origAddresses) {
         console.log('Wrote ' + latLong.length + ' entries to array latLong');
         //console.log(latLong);
         //gotAddys = 1;
+        createObj();
+        
+        // for testing
+        fs.writeFile('/home/ubuntu/workspace/data/test.txt', JSON.stringify(meetingInfo), function(err) {
+            if (err)
+                return console.log('Error');
+            console.log('Wrote ' + meetingInfo.length + ' entries to file ' + 'test.txt');
 
-        for (var i = 0; i < latLong.length - 1; i++) {
+        });
+        fs.writeFile('/home/ubuntu/workspace/data/testLatLong.txt', JSON.stringify(latLong), function(err) {
+            if (err)
+                return console.log('Error');
+            console.log('Wrote ' + latLong.length + ' entries to file ' + 'testLatLong.txt');
+
+        });
+        
+        mongoUpload();
+    });
+
+}
+
+
+function mongoUpload(){
+    //feed results to mongo db
+    MongoClient.connect(url, function(err, db) {
+    // if there isn't a connection print error
+        assert.equal(null, err);
+    // log in console if you can connect to server
+        console.log("Connected correctly to server");
+
+        insertDocuments(db, function() {
+        // close database connection
+            db.close();
+        });
+    });
+}
+
+// function to insert info into documents
+var insertDocuments = function(db, callback) {
+    // Get the documents collection
+    var collection = db.collection('aatest');
+    // Insert some documents
+    collection.insert(
+        meetingInfo,
+        function(err, result) {
+            assert.equal(err, null);
+            assert.equal(meetingInfo.length, result.result.n);
+            assert.equal(meetingInfo.length, result.ops.length);
+            console.log("Inserted " + meetingInfo.length + " documents into the document collection");
+            callback(result);
+        });
+}
+
+function createObj(){
+    for (var i = 0; i < latLong.length - 1; i++) {
             for (var j = 0; j < meetingSpecs.length - 1; j++) {
 
                 obj = new Object;
@@ -190,9 +211,10 @@ function getLatLong(origAddresses) {
                 obj.origAddress = origAddresses[i];
                 obj.cleanedAddress = fixAddresses(origAddresses[i]);
                 obj.addressMoreInfo = bool(cleanMoreAddyInfo(addyMoreInfo[i]));
-                obj.zipcode = zipcodes[i];
+                obj.zipcode = bool(zipcodes[i]);
                 obj.geoCodedAddress = fixAddresses(origAddresses[i]).split(' ').join('+');
-                obj.latLong = latLong[i];
+                obj.googleapis = googleapis[i];
+                obj.latLong = latLong[i+1];
 
 
                 obj.meetingDeets = meetingSpecs[i];
@@ -231,18 +253,7 @@ function getLatLong(origAddresses) {
             }
 
         }
-        fs.writeFile('/home/ubuntu/workspace/data/test.txt', JSON.stringify(meetingInfo), function(err) {
-            if (err)
-                return console.log('Error');
-            console.log('Wrote ' + meetingInfo.length + ' entries to file ' + 'test.txt');
-
-        });
-    });
-
 }
-
-
-
 
 
 // function to clean addresses
@@ -250,7 +261,6 @@ function fixAddresses(oldAddress) {
     var newAddress = oldAddress.substring(0, oldAddress.indexOf(',')) + ' New York, NY';
     return newAddress;
 }
-
 
 
 function bool(value) {
@@ -364,3 +374,12 @@ function cleanMoreAddyInfo(moreInfo){
     var cleaned = moreInfo.substr(0, moreInfo.indexOf(','));
     return cleaned;
 }
+
+function extractFromAdress(components, type){
+ for (var i=0; i<components.length; i++)
+  for (var j=0; j<components[i].types.length; j++)
+   if (components[i].types[j]==type) return components[i].long_name;
+  return "";
+}
+
+

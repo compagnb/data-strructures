@@ -43,8 +43,8 @@ $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
    addresses.push( $(elem).find('td').eq(0).html().split('<br>')[2].trim()); 
    
   var addyInfo = [];
-  addyInfo[i] = addresses[i].substr(addresses[i].indexOf(',')+2, addresses[i].length).trim();
-  addyInfo[i].replace(/[&\/\\#,+()$~%.'":*?<>{}]/g,"");
+  addyInfo[i] = addresses[i].substr(addresses[i].indexOf(',')+1, addresses[i].length).trim();
+  addyInfo[i] = addyInfo[i].substr(0, addyInfo[i].indexOf(','));
   console.log(addyInfo[i]);
    
    // cleaned addresses
