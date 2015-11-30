@@ -20,21 +20,22 @@ var url = 'mongodb://localhost:27017/aatest';
 
 var zones = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"];
 var bourough = "M";
-// live link of aa page
-var aaPage = "http://www.nyintergroup.org/meetinglist/meetinglist.cfm?zone=" + zones[1] +"&borough=" +bourough;
-    // file link for testing
-    // var fileContent = fs.readFileSync('/home/ubuntu/workspace/data/aameetinglist02M.txt');
-    // use cheerio to load the content
-    // var $ = cheerio.load(fileContent);
 
 // Enviornment Variables
 // var apiKey = process.env.GMAKEY;
 var apiKey = 'AIzaSyA-CKC1h7HYmCnIminO6aSpD0yaAxNTXw4';
 
+// live link of aa page
+var aaPage = "http://www.nyintergroup.org/meetinglist/meetinglist.cfm?zone=" + zones[1] + "&borough=" + bourough;
+// file link for testing
+// var fileContent = fs.readFileSync('/home/ubuntu/workspace/data/aameetinglist02M.txt');
+// use cheerio to load the content
+// var $ = cheerio.load(fileContent);
 
 var meetingInfo = [];
 var origAddresses = [];
 var geocodedAddresses = [];
+var googleAddresses = [];
 var zipcodes = [];
 var addyMoreInfo = [];
 var latLong = [];
@@ -49,6 +50,7 @@ var specialInfo = [];
 var directions = [];
 var googleapis = [];
 
+var uploaded = false;
 
 var obj;
 
@@ -81,13 +83,71 @@ async.waterfall([
             });
         },
         // parse aa meeting data and add geo-coding
-        function parseData(body, callback, meetingInfo) {
-            getMeetingInfo(body);
+        function parseData(body, parseCallback) {
+            // use cheerio to load the content
+            $ = cheerio.load(body);
+
+            // get info from tables
+            $('table[cellpadding=5]').find('tbody').find('tr').each(function(i, elem) {
+
+                meetingSpecs.push($(elem).find('td').eq(1).html().replace(/>\s*/g, ">").replace(/\s*</g, "<").split("<br><br>"));
+                meetingNames.push($(elem).find('b').eq(0).text().replace(/\s+/g, ' ').trim());
+                locationNames.push($(elem).find('h4').eq(0).text().trim());
+                origAddresses.push($(elem).find('td').eq(0).html().split('<br>')[2].trim());
+                addyMoreInfo.push(origAddresses[i].substr(origAddresses[i].indexOf(',') + 2, origAddresses[i].length).trim());
+                specialInfo.push($(elem).find('.detailsBox').eq(0).text().trim());
+                handicapAccessible.push($(elem).find('span').eq(0).text().trim());
+            });
+
+            var geolocation;
+            var zipcode;
+            async.eachSeries(origAddresses, function(value, callback) {
+
+                var apiRequest = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + fixAddresses(value).split(' ').join('+') + '&key=' + apiKey;
+                //console.log(apiRequest);
+
+                request(apiRequest, function(err, resp, body) {
+                    if (err) {
+                        throw err;
+                    }
+
+                    if (JSON.parse(body).status == "ZERO_RESULTS") {
+                        console.log("ZERO RESULTS for" + value);
+                    }
+                    else {
+                        geolocation = JSON.parse(body).results[0].geometry.location;
+                        //console.log(JSON.parse(body).results[0].geometry.location);
+                        //return JSON.parse(body).results[0].geometry.location;
+                        zipcode = extractFromAdress(JSON.parse(body).results[0].address_components, "postal_code");
+                        zipcodes.push(zipcode);
+                        googleapis.push(apiRequest);
+                        latLong.push(geolocation);
+                    }
+                });
+                setTimeout(callback, 300);
+            }, function() {
+                console.log("geo coords gathered")
+                console.log('Wrote ' + latLong.length + ' entries to array latLong');
+                parseCallback(null);
+                //console.log(latLong);
+                //gotAddys = 1;
+                // 
+
+                // for testing
+                // fs.writeFile('/home/ubuntu/workspace/data/test.txt', JSON.stringify(meetingInfo), function(err) {
+                //     if (err)
+                //         return console.log('Error');
+                //     console.log('Wrote ' + meetingInfo.length + ' entries to file ' + 'test.txt');
+
+                // });
+            });
 
         },
     ],
-    function(meetinginfo, err, res) {
-        
+    function(parseCallback, err, res) {
+        createObj();
+        //console.log(meetingInfo);
+        mongoUpload();
 
     });
 
@@ -96,90 +156,21 @@ async.waterfall([
 
 function getMeetingInfo(body) {
 
-    // use cheerio to load the content
-    $ = cheerio.load(body);
 
-    // get info from tables
-    $('table[cellpadding=5]').find('tbody').find('tr').each(function(i, elem) {
-
-        meetingSpecs.push($(elem).find('td').eq(1).html().replace(/>\s*/g, ">").replace(/\s*</g, "<").split("<br><br>"));
-        meetingNames.push($(elem).find('b').eq(0).text().replace(/\s+/g, ' ').trim());
-        locationNames.push($(elem).find('h4').eq(0).text().trim());
-        origAddresses.push($(elem).find('td').eq(0).html().split('<br>')[2].trim());
-        addyMoreInfo.push(origAddresses[i].substr(origAddresses[i].indexOf(',')+2, origAddresses[i].length).trim());
-        specialInfo.push($(elem).find('.detailsBox').eq(0).text().trim());
-        handicapAccessible.push($(elem).find('span').eq(0).text().trim());
-    });
-
-    //console.log(addyMoreInfo);
-    latLong.push(getLatLong(origAddresses));
-
-}
-
-function getLatLong(origAddresses) {
-    var geolocation;
-    var zipcode;
-    async.eachSeries(origAddresses, function(value, callback) {
-        
-        var apiRequest = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + fixAddresses(value).split(' ').join('+') + '&key=' + apiKey;
-        console.log(apiRequest);
-
-        request(apiRequest, function(err, resp, body) {
-            if (err) {
-                throw err;
-            }
-
-            if (JSON.parse(body).status == "ZERO_RESULTS") {
-                console.log("ZERO RESULTS for" + value);
-            }
-            else {
-                geolocation = JSON.parse(body).results[0].geometry.location;
-                //console.log(JSON.parse(body).results[0].geometry.location);
-                //return JSON.parse(body).results[0].geometry.location;
-                zipcode = extractFromAdress(JSON.parse(body).results[0].address_components, "postal_code");
-                zipcodes.push(zipcode);
-                googleapis.push(apiRequest);
-                latLong.push(geolocation);
-            }
-        });
-        setTimeout(callback, 300);
-    }, function() {
-        console.log("geo coords gathered")
-        console.log('Wrote ' + latLong.length + ' entries to array latLong');
-        //console.log(latLong);
-        //gotAddys = 1;
-        createObj();
-        
-        // for testing
-        fs.writeFile('/home/ubuntu/workspace/data/test.txt', JSON.stringify(meetingInfo), function(err) {
-            if (err)
-                return console.log('Error');
-            console.log('Wrote ' + meetingInfo.length + ' entries to file ' + 'test.txt');
-
-        });
-        fs.writeFile('/home/ubuntu/workspace/data/testLatLong.txt', JSON.stringify(latLong), function(err) {
-            if (err)
-                return console.log('Error');
-            console.log('Wrote ' + latLong.length + ' entries to file ' + 'testLatLong.txt');
-
-        });
-        
-        mongoUpload();
-    });
 
 }
 
 
-function mongoUpload(){
+function mongoUpload() {
     //feed results to mongo db
     MongoClient.connect(url, function(err, db) {
-    // if there isn't a connection print error
+        // if there isn't a connection print error
         assert.equal(null, err);
-    // log in console if you can connect to server
+        // log in console if you can connect to server
         console.log("Connected correctly to server");
 
         insertDocuments(db, function() {
-        // close database connection
+            // close database connection
             db.close();
         });
     });
@@ -201,61 +192,61 @@ var insertDocuments = function(db, callback) {
         });
 }
 
-function createObj(){
+function createObj() {
     for (var i = 0; i < latLong.length - 1; i++) {
-            for (var j = 0; j < meetingSpecs.length - 1; j++) {
+        for (var j = 0; j < meetingSpecs.length - 1; j++) {
 
-                obj = new Object;
+            obj = new Object;
 
-                obj.meetingName = fixMeetingNames(meetingNames[i]);
+            obj.meetingName = fixMeetingNames(meetingNames[i]);
 
-                obj.locationName = bool(locationNames[i]);
+            obj.locationName = bool(locationNames[i]);
 
-                obj.origAddress = origAddresses[i];
-                obj.cleanedAddress = fixAddresses(origAddresses[i]);
-                obj.addressMoreInfo = bool(cleanMoreAddyInfo(addyMoreInfo[i]));
-                obj.zipcode = bool(zipcodes[i]);
-                obj.geoCodedAddress = fixAddresses(origAddresses[i]).split(' ').join('+');
-                obj.googleapis = googleapis[i];
-                obj.latLong = latLong[i+1];
+            obj.origAddress = origAddresses[i];
+            obj.cleanedAddress = fixAddresses(origAddresses[i]);
+            obj.addressMoreInfo = bool(cleanMoreAddyInfo(addyMoreInfo[i]));
+            obj.zipcode = bool(zipcodes[i]);
+            obj.geoCodedAddress = fixAddresses(origAddresses[i]).split(' ').join('+');
+            obj.googleapis = googleapis[i];
+            obj.latLong = latLong[i + 1];
 
 
-                obj.meetingDeets = meetingSpecs[i];
-                var oneMeeting = meetingSpecs[j].toString().split("b>");
-                var meetingDay = oneMeeting[1].substr(0, oneMeeting[1].indexOf(' From'));
-                var startTime = oneMeeting[2].substr(0, oneMeeting[2].indexOf('<')).trim();
-                var endTime = oneMeeting[4].substr(0, oneMeeting[4].indexOf('<')).trim();
+            obj.meetingDeets = meetingSpecs[i];
+            var oneMeeting = meetingSpecs[j].toString().split("b>");
+            var meetingDay = oneMeeting[1].substr(0, oneMeeting[1].indexOf(' From'));
+            var startTime = oneMeeting[2].substr(0, oneMeeting[2].indexOf('<')).trim();
+            var endTime = oneMeeting[4].substr(0, oneMeeting[4].indexOf('<')).trim();
 
-                obj.meetingDay = meetingDay;
-                obj.meetingDayNum = cleanDays(meetingDay);
-                obj.meetingStartTime = startTime;
-                obj.meetingStartHr = cleanHrs(startTime);
-                obj.meetingStartMin = cleanMins(startTime);
-                obj.meetingEndTime = endTime;
-                obj.meetingEndHr = cleanHrs(endTime);
-                obj.meetingEndMin = cleanMins(endTime);
-                for (var k = 4; k < oneMeeting.length; k++) {
-                    if (oneMeeting[k].substr(0, 7) === "Meeting") {
-                        var meetingType = oneMeeting[k + 1].toString()
-                        obj.meetingType = cleanType(meetingType);
-                    }
-                    if (oneMeeting[k].substr(0, 7) === "Special") {
-                        var specialInterest = oneMeeting[k + 1];
-                        obj.SpecialInterest = cleanSpecial(specialInterest);
-                    }
+            obj.meetingDay = meetingDay;
+            obj.meetingDayNum = cleanDays(meetingDay);
+            obj.meetingStartTime = startTime;
+            obj.meetingStartHr = cleanHrs(startTime);
+            obj.meetingStartMin = cleanMins(startTime);
+            obj.meetingEndTime = endTime;
+            obj.meetingEndHr = cleanHrs(endTime);
+            obj.meetingEndMin = cleanMins(endTime);
+            for (var k = 4; k < oneMeeting.length; k++) {
+                if (oneMeeting[k].substr(0, 7) === "Meeting") {
+                    var meetingType = oneMeeting[k + 1].toString()
+                    obj.meetingType = cleanType(meetingType);
                 }
-
-                obj.handiAccess = bool(handicapAccessible[i]);
-                obj.specialInfo = bool(specialInfo[i]);
-
-
-                // obj.directions =
-                meetingInfo.push(obj);
-                //console.log(obj);
-
+                if (oneMeeting[k].substr(0, 7) === "Special") {
+                    var specialInterest = oneMeeting[k + 1];
+                    obj.SpecialInterest = cleanSpecial(specialInterest);
+                }
             }
 
+            obj.handiAccess = bool(handicapAccessible[i]);
+            obj.specialInfo = bool(specialInfo[i]);
+
+
+            // obj.directions =
+            meetingInfo.push(obj);
+            //console.log(obj);
+
         }
+
+    }
 }
 
 
@@ -358,16 +349,16 @@ function cleanHrs(time) {
     // separate the hrs and mins
     var hrMins = time.split(":");
     var hr = parseInt(hrMins[0]);
-    
+
     console.log(hr);
-    
-    if (m == "AM" && hr == "12" ){
+
+    if (m == "AM" && hr == "12") {
         return 0;
     }
-    if (m == "AM" && hr < 12){
+    if (m == "AM" && hr < 12) {
         return parseInt(hr);
     }
-    if (m == "PM" && hr === 12){
+    if (m == "PM" && hr === 12) {
         return 12;
     }
     if (m == "PM" && hr < 12) {
@@ -379,22 +370,20 @@ function cleanHrs(time) {
 
 function cleanMins(time) {
     var mins = time.substr(time.indexOf(':') + 1, time.indexOf(':') + 2).trim();
-    
+
     return parseInt(mins);
-    
-    
+
+
 }
 
-function cleanMoreAddyInfo(moreInfo){
+function cleanMoreAddyInfo(moreInfo) {
     var cleaned = moreInfo.substr(0, moreInfo.indexOf(','));
     return cleaned;
 }
 
-function extractFromAdress(components, type){
- for (var i=0; i<components.length; i++)
-  for (var j=0; j<components[i].types.length; j++)
-   if (components[i].types[j]==type) return components[i].long_name;
-  return "";
+function extractFromAdress(components, type) {
+    for (var i = 0; i < components.length; i++)
+        for (var j = 0; j < components[i].types.length; j++)
+            if (components[i].types[j] == type) return components[i].long_name;
+    return "";
 }
-
-
