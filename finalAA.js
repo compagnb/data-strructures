@@ -315,7 +315,7 @@ function fixMeetingNames(wholeName) {
 }
 
 function cleanDays(day) {
-    if (day == "Sundays") {
+    if (day == "Sundays" || day == "s") {
         return 0;
     }
     else if (day == "Mondays") {
@@ -349,17 +349,26 @@ function cleanSpecial(special) {
     return cleaned;
 }
 
+
 function cleanHrs(time) {
 
     // pull the AM or PM out of the time data
     var m = time.substr(time.length - 2, time.length);
 
     // separate the hrs and mins
-    var hrMins = time.substr(0, time.indexOf(':')).trim();
-    var hr = hrMins[0];
-
-    if (m == "AM") {
-        return hr * 1;
+    var hrMins = time.split(":");
+    var hr = parseInt(hrMins[0]);
+    
+    console.log(hr);
+    
+    if (m == "AM" && hr == "12" ){
+        return 0;
+    }
+    if (m == "AM" && hr < 12){
+        return parseInt(hr);
+    }
+    if (m == "PM" && hr === 12){
+        return 12;
     }
     if (m == "PM" && hr < 12) {
         hr = hr * 1;
@@ -370,7 +379,10 @@ function cleanHrs(time) {
 
 function cleanMins(time) {
     var mins = time.substr(time.indexOf(':') + 1, time.indexOf(':') + 2).trim();
-    return mins *1;
+    
+    return parseInt(mins);
+    
+    
 }
 
 function cleanMoreAddyInfo(moreInfo){

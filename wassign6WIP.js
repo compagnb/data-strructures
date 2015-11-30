@@ -67,13 +67,65 @@ $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
 
 // meeting names -- need to clean dashes and appostrophes
 $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
-   meetingNames.push( $(elem).find('b').eq(0).text().replace(/\s+/g,' ').trim()); 
+    
+    meetingSpecs.push($(elem).find('td').eq(1).html().replace(/>\s*/g, ">").replace(/\s*</g, "<").split("<br><br>"));
+  
+   
+   //meetingNames.push( $(elem).find('b').eq(0).text().replace(/\s+/g,' ').trim()); 
     // console.log(meetingNames[i]);
    
    // cleaned
 //   console.log(fixMeetingNames(meetingNames[i]));
 });
+for (var j = 0; j < meetingSpecs.length - 1; j++) {
+    var oneMeeting = meetingSpecs[j].toString().split("b>");
+    var meetingDay = oneMeeting[1].substr(0, oneMeeting[1].indexOf(' From'));
+    var startTime = oneMeeting[2].substr(0, oneMeeting[2].indexOf('<')).trim();
+    var endTime = oneMeeting[4].substr(0, oneMeeting[4].indexOf('<')).trim();
+    
+    console.log(startTime);
+    console.log(cleanHrs(startTime));
+    console.log(endTime);
+    console.log(cleanHrs(endTime));
+    console.log("-----------------");
+}
 
+
+
+function cleanHrs(time) {
+
+    // pull the AM or PM out of the time data
+    var m = time.substr(time.length - 2, time.length);
+
+    // separate the hrs and mins
+    var hrMins = time.split(":");
+    var hr = parseInt(hrMins[0]);
+    
+    console.log(hr);
+    
+    if (m == "AM" && hr == "12" ){
+        return 0;
+    }
+    if (m == "AM" && hr < 12){
+        return parseInt(hr);
+    }
+    if (m == "PM" && hr === 12){
+        return 12;
+    }
+    if (m == "PM" && hr < 12) {
+        hr = hr * 1;
+        return hr += 12;
+    }
+
+}
+
+function cleanMins(time) {
+    var mins = time.substr(time.indexOf(':') + 1, time.indexOf(':') + 2).trim();
+    
+    return parseInt(mins);
+    
+    
+}
 // meeting specs
 
 // $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
