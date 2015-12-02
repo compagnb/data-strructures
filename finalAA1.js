@@ -26,8 +26,8 @@ var bourough = "M";
 var apiKey = 'AIzaSyA-CKC1h7HYmCnIminO6aSpD0yaAxNTXw4';
 
 // live link of aa page
-//var aaPage = "http://www.nyintergroup.org/meetinglist/meetinglist.cfm?zone=" + zones[1] + "&borough=" + bourough;
-var aaPage = "http://www.nyintergroup.org/meetinglist/meetinglist.cfm";
+var aaPage = "http://www.nyintergroup.org/meetinglist/meetinglist.cfm?zone=" + zones[2] + "&borough=" + bourough;
+//var aaPage = "http://www.nyintergroup.org/meetinglist/meetinglist.cfm";
 // file link for testing
 // var fileContent = fs.readFileSync('/home/ubuntu/workspace/data/aameetinglist02M.txt');
 // use cheerio to load the content

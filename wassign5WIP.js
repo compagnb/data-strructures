@@ -15,6 +15,26 @@ var MongoClient = require('mongodb').MongoClient
 var dbName = 'aatest';
 var collName = 'aameetings_area2';
 
+// Get current day and time info, and create end day and time vars for pipeline
+var currentDate = new Date();
+var startDayNum = currentDate.getDay();
+var currentTime = currentDate.getHours();
+var endTime = 4;
+
+//console.log(startDayNum);
+
+var endDayNum = getEndDay(startDayNum);
+
+function getEndDay(startDayNum){
+    if (startDayNum < 7){
+        return startDayNum+1;
+    } else {
+        return 0
+    }
+    //console.log(endDayNum);
+}
+
+
 // Connection URL
 var url = 'mongodb://' + process.env.IP + ':27017/' + dbName;
 
@@ -37,12 +57,12 @@ MongoClient.connect(url, function(err, db) {
         
         $or: [{
         
-            $and: [{ meetingDayNum: 2 },
-            { meetingStartHr: { $gt: 19, $lt: 0 } } 
+            $and: [{ meetingDay: "Tuesdays" },
+            { meetingStartHr: { $gt: 10, $lt: 24 } } 
             ]},
         
-            { $and: [{ meetingDayNum: 3 },
-            { meetingStartHr: { $gt: 0, $lt: 19 } } 
+            { $and: [{ meetingDay: "Wednesdays" },
+            { meetingStartHr: { $gt: 0, $lt: 4 } } 
             ]}
     ]}},
     
