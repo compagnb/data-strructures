@@ -33,8 +33,18 @@ MongoClient.connect(url, function(err, db) {
     
     // { $match: { meetingDayNum: 1 } },
     // { $match: { $or: [ { meetingStartHr: { $gt: 19, $lt: 24 } } ]}},
-    { $match: { meetingDayNum: 2 } },
-    { $match: { $or: [ { meetingStartHr: { $gt: 0, $lt: 19 } } ]}},
+    { $match: {
+        
+        $or: [{
+        
+            $and: [{ meetingDayNum: 2 },
+            { meetingStartHr: { $gt: 19, $lt: 0 } } 
+            ]},
+        
+            { $and: [{ meetingDayNum: 3 },
+            { meetingStartHr: { $gt: 0, $lt: 19 } } 
+            ]}
+    ]}},
     
     {$group: {_id : "$cleanedAddress",
         meetingName: {$push: "$meetingName"}, 

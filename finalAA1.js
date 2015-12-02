@@ -26,7 +26,8 @@ var bourough = "M";
 var apiKey = 'AIzaSyA-CKC1h7HYmCnIminO6aSpD0yaAxNTXw4';
 
 // live link of aa page
-var aaPage = "http://www.nyintergroup.org/meetinglist/meetinglist.cfm?zone=" + zones[1] + "&borough=" + bourough;
+//var aaPage = "http://www.nyintergroup.org/meetinglist/meetinglist.cfm?zone=" + zones[1] + "&borough=" + bourough;
+var aaPage = "http://www.nyintergroup.org/meetinglist/meetinglist.cfm";
 // file link for testing
 // var fileContent = fs.readFileSync('/home/ubuntu/workspace/data/aameetinglist02M.txt');
 // use cheerio to load the content
@@ -210,8 +211,8 @@ function createObj() {
             obj.googleapis = googleapis[i];
             obj.latLong = latLong[i + 1];
 
-
-            obj.meetingDeets = meetingSpecs[i];
+            var meeting = meetingSpecs[i];
+            //obj.meetingDeets = meetingSpecs[i];
             var oneMeeting = meetingSpecs[j].toString().split("b>");
             var meetingDay = oneMeeting[1].substr(0, oneMeeting[1].indexOf(' From'));
             var startTime = oneMeeting[2].substr(0, oneMeeting[2].indexOf('<')).trim();
