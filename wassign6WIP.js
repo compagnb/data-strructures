@@ -33,7 +33,7 @@ var directions = [];
 var test = [];
 
 // put contents of the file in a variable
-var fileContent = fs.readFileSync('/home/ubuntu/workspace/data/aameetinglist02M.txt');
+var fileContent = fs.readFileSync('/home/ubuntu/workspace/data/aameetinglist04M.txt');
 
 // use cheerio to load the content
 var $ = cheerio.load(fileContent);
@@ -45,7 +45,7 @@ $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
   var addyInfo = [];
   addyInfo[i] = addresses[i].substr(addresses[i].indexOf(',')+1, addresses[i].length).trim();
   addyInfo[i] = addyInfo[i].substr(0, addyInfo[i].indexOf(','));
-  console.log(addyInfo[i]);
+  //console.log(addyInfo[i]);
    
    // cleaned addresses
 //   console.log(fixAddresses(addresses[i]) );
@@ -72,24 +72,44 @@ $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
   
    
    //meetingNames.push( $(elem).find('b').eq(0).text().replace(/\s+/g,' ').trim()); 
-    // console.log(meetingNames[i]);
+    console.log(meetingSpecs[i]);
+ 
    
    // cleaned
 //   console.log(fixMeetingNames(meetingNames[i]));
 });
-for (var j = 0; j < meetingSpecs.length - 1; j++) {
-    var oneMeeting = meetingSpecs[j].toString().split("b>");
-    var meetingDay = oneMeeting[1].substr(0, oneMeeting[1].indexOf(' From'));
-    var startTime = oneMeeting[2].substr(0, oneMeeting[2].indexOf('<')).trim();
-    var endTime = oneMeeting[4].substr(0, oneMeeting[4].indexOf('<')).trim();
+var specialInterest;
+   for (var j = 0; j < meetingSpecs.length - 1; j++) {
+        var oneMeeting = meetingSpecs[j].toString().split("b>");
+        for (var k = 4; k < oneMeeting.length; k++) {
+                if (oneMeeting[k].substr(0, 7) === "Meeting") {
+                    var meetingType = oneMeeting[k + 1].toString()
+                    console.log("type :  " +meetingType);
+                }
+                if (oneMeeting[k].substr(0, 7) === "Special") {
+                    specialInterest = oneMeeting[k + 1];
+                    if (specialInterest != undefined){
+                     specialInterest = myTrim(specialInterest);
+                    }
+                    console.log("special :  " +specialInterest);
+                }
+            }
+    }
+// for (var j = 0; j < meetingSpecs.length - 1; j++) {
+//     var oneMeeting = meetingSpecs[j].toString().split("b>");
+//     var meetingDay = oneMeeting[1].substr(0, oneMeeting[1].indexOf(' From'));
+//     var startTime = oneMeeting[2].substr(0, oneMeeting[2].indexOf('<')).trim();
+//     var endTime = oneMeeting[4].substr(0, oneMeeting[4].indexOf('<')).trim();
     
-    console.log(startTime);
-    console.log(cleanHrs(startTime));
-    console.log(endTime);
-    console.log(cleanHrs(endTime));
-    console.log("-----------------");
+//     // console.log(startTime);
+//     // console.log(cleanHrs(startTime));
+//     // console.log(endTime);
+//     // console.log(cleanHrs(endTime));
+//     // console.log("-----------------");
+// }
+function myTrim(x) {
+    return x.replace(/[,<]/gm,' ');
 }
-
 
 
 function cleanHrs(time) {
@@ -245,7 +265,7 @@ $('table[cellpadding=5]').find('tbody').find('tr').each (function (i, elem){
    specialInfo.push( $(elem).find('.detailsBox').eq(0).text().trim()); 
    
    // returns non if there is no special info
-//   console.log(bool(specialInfo[i]));
+  //console.log(bool(specialInfo[i]));
 });
 
 
@@ -274,26 +294,26 @@ function fixMeetingNames(wholeName){
     
     var compare = firstHalfClean.localeCompare(secondHalfClean);
     
-    console.log("--------------")
-    console.log("1 string:" + firstHalfClean + " | length: " + firstHalfClean.length );
-    console.log("2 string:" + secondHalfClean + " | length: " + secondHalfClean.length);
-    console.log(middle);
-    console.log(compare);
+    // console.log("--------------")
+    // console.log("1 string:" + firstHalfClean + " | length: " + firstHalfClean.length );
+    // console.log("2 string:" + secondHalfClean + " | length: " + secondHalfClean.length);
+    // console.log(middle);
+    // console.log(compare);
     
     if ( middle < compare && compare >= 4 ){
-        console.log(">= 4" + wholeName.replace(/-/g, ' ').trim());
+        // console.log(">= 4" + wholeName.replace(/-/g, ' ').trim());
         return wholeName.replace(/-/g, ' ').trim();
     // this is for ones with (:II) after the name
     }else if (compare == middle - 3 || compare == 0 || secondHalfClean.length == 0 || firstHalfClean.indexOf("(:I") != -1){
-        console.log("First return" + firstHalf.replace(/-/g, ' ').trim());
+        // console.log("First return" + firstHalf.replace(/-/g, ' ').trim());
         return firstHalf.replace(/-/g, ' ').trim();
     // this is for ones with (:II) after the name
     }else if (firstHalfClean == 0 || secondHalfClean.indexOf("(:I") != -1){
-        console.log("second has #" + secondHalf.replace(/-/g, ' ').trim());
+        // console.log("second has #" + secondHalf.replace(/-/g, ' ').trim());
         return secondHalf.replace(/-/g, ' ').trim();
     // this is for ones with more then (:II) after the name
     }else if (compare < 0) {
-        console.log( "< 0" + firstHalf + ": " + secondHalf.substring(compare));
+        // console.log( "< 0" + firstHalf + ": " + secondHalf.substring(compare));
         return  secondHalf.substring(compare);
     // this is for ones that match
     }
@@ -335,3 +355,9 @@ function bool(value){
 
 // // fs.writeFileSync('/home/ubuntu/workspace/data/addresses.txt', meetings);
 // fs.writeFileSync('/home/ubuntu/workspace/data/addresses.txt', JSON.stringify(meetings)); 
+function cleanSpecial(special) {
+    //var test = special.trim();
+    //test.substr(0, test.length-1);
+    //var cleaned = special.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, "");
+    return special;
+}

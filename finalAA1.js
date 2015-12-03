@@ -16,8 +16,9 @@ var MongoClient = require('mongodb').MongoClient,
 var fs = require("fs"); // no need to install it is a core module
 
 // variables for mongodb
-var url = 'mongodb://localhost:27017/aatest';
+var url = 'mongodb://localhost:27017/aaMeetings';
 
+// data for testing AA indiv pages
 var zones = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"];
 var bourough = "M";
 
@@ -25,12 +26,16 @@ var bourough = "M";
 // var apiKey = process.env.GMAKEY;
 var apiKey = 'AIzaSyA-CKC1h7HYmCnIminO6aSpD0yaAxNTXw4';
 
-// live link of aa page
-var aaPage = "http://www.nyintergroup.org/meetinglist/meetinglist.cfm?zone=" + zones[2] + "&borough=" + bourough;
-//var aaPage = "http://www.nyintergroup.org/meetinglist/meetinglist.cfm";
+// live link of aa page for each zone 
+// var aaPage = "http://www.nyintergroup.org/meetinglist/meetinglist.cfm?zone=" + zones[3] + "&borough=" + bourough;
+
+// live link of aa page for all manhattan
+var aaPage = "http://www.nyintergroup.org/meetinglist/meetinglist.cfm";
+
 // file link for testing
 // var fileContent = fs.readFileSync('/home/ubuntu/workspace/data/aameetinglist02M.txt');
-// use cheerio to load the content
+
+// use cheerio to load the file content for testing
 // var $ = cheerio.load(fileContent);
 
 var meetingInfo = [];
@@ -253,10 +258,18 @@ function createObj() {
 
 // function to clean addresses
 function fixAddresses(oldAddress) {
+    oldAddress = ckOldAddy(oldAddress);
     var newAddress = oldAddress.substring(0, oldAddress.indexOf(',')) + ' New York, NY';
     return newAddress;
 }
 
+function ckOldAddy(oldAddress){
+    if (oldAddress == "253 Center Street"){
+        return "253 Centre Street";
+    }else{
+        return oldAddress;
+    }
+}
 
 function bool(value) {
     if (value == "") {
@@ -337,7 +350,9 @@ function cleanType(type) {
 
 function cleanSpecial(special) {
     //special.substr(0, special.length-1);
-    var cleaned = special.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, "");
+    if (special != undefined){
+        var cleaned = special.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, "");
+    }
     return cleaned;
 }
 
@@ -351,7 +366,7 @@ function cleanHrs(time) {
     var hrMins = time.split(":");
     var hr = parseInt(hrMins[0]);
 
-    console.log(hr);
+    //console.log(hr);
 
     if (m == "AM" && hr == "12") {
         return 0;
