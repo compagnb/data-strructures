@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>AA Meetings in Manhattan</title>
+    <style>
+        html,
+        body,
+        #map-canvas {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #firstHeading {
+            font-size: 100%;
+        }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true"></script>
+    <script>
+      // Get current day and time info
+      var currentDate = new Date();
+      // get the day number 0 = Sunday, 7 = Saturday...
+      var currentDay = currentDate.getDay();
+        var openWindow;
+        var req = new XMLHttpRequest();
+        req.open("GET", "https://data-structures-compagnb.c9.io");
+        req.addEventListener("load", function(res) {
+          var latNow = 40.786354;
+          var longNow = -73.949175;
+          var customMapType = new google.maps.StyledMapType([
+          {
+            stylers: [
+              {hue: '#A2B5CD'},
+              {visibility: 'simplified'},
+              {gamma: 1},
+              {weight: 0.5}
+            ]
+          },
+          {
+            featureType: 'water',
+            stylers: [{color: '#A2B5CD'}]
+          }
+          ], {
+          name: 'Custom Style'
+          });
+          var customMapTypeId = 'custom_style';
+
+          var mapOptions = {  center: new google.maps.LatLng(latNow, longNow), mapTypeId: google.maps.MapTypeId.ROADMAP }
+          var map = new google.maps.Map(document.getElementById('map-canvas'),{
+            zoom: 12,
+            center: {lat: latNow, lng: longNow}, 
+            mapTypeControlOptions: {
+              mapTypeIds: [google.maps.MapTypeId.ROADMAP, customMapTypeId]
+            }
+
+          });
+            map.mapTypes.set(customMapTypeId, customMapType);
+            map.setMapTypeId(customMapTypeId);
+
+          JSON.parse(res.target.response).forEach(function(el) {
+            setMarker(map, el);
+          });
+        });
+        req.send();
+        function makeContent(cont) {
+          var contentHolder = '<div id="content">' +
+                '<div id="siteNotice">' +
+                '</div>';
+            for (var i = 0; i < cont.meetingGroups.length; i++) {
+              if(cont.meetingGroups[i].meetingGroup.meetingName != null){
+                contentHolder = contentHolder + '<h1 id="firstHeading" class="firstHeading">';
+                contentHolder = contentHolder + cont.meetingGroups[i].meetingGroup.meetingName + '</h1>';
+                }
+              if (cont.meetingGroups[i].meetingGroup.locationName != "none") {
+                    contentHolder = contentHolder + '<p>' + cont.meetingGroups[i].meetingGroup.locationName + '<br>';
+                  }
+              if (cont.meetingGroups[i].meetingGroup.meetingAddress != "none"){
+                contentHolder = contentHolder + cont.meetingGroups[i].meetingGroup.meetingAddress.substr(0, cont.meetingGroups[i].meetingGroup.meetingAddress.indexOf(' New')) + '<br>';
+                // do not include New York, NY if we are only including NY
+              }
+              if (cont.meetingGroups[i].meetingGroup.addressMoreInfo != "none"){
+                  contentHolder = contentHolder + cont.meetingGroups[i].meetingGroup.addressMoreInfo + '</p>';
+              }else if(cont.meetingGroups[i].meetingGroup.addressMoreInfo == "none"){
+                  contentHolder = contentHolder + '</p>';
+              }
+
+              for (var j = 0; j < cont.meetingGroups[i].meetings.startTimes.length; j++) {
+
+                // meeting days!
+                var day = cont.meetingGroups[i].meetings.meetingDayNum[j];
+                var todayMeetings = "";
+                var tomMeetings = "";
+                var todCount = 0;
+                var tomCount = 0;
+
+                // meeting types!
+                var mt = cont.meetingGroups[i].meetings.meetingTypes[j];
+                if (mt == null){
+                  mt = "";
+                }else{
+                    mt = "– "+mt;
+                  }
+                // }
+
+                // special interest!
+                var si = cont.meetingGroups[i].meetings.specialInterest[j];
+                if (si == null){
+                  si = "";
+                }else {
+                  si = ": "+si;
+                }
+
+                if (day == currentDay){
+                  if (todCount == 0){
+                    todayMeetings = "<p><b>Today's meetings: </b><br>";
+                  }
+                  todayMeetings = todayMeetings + cont.meetingGroups[i].meetings.startTimes[j] + ' - '+ cont.meetingGroups[i].meetings.endTimes[j] + ' '+ mt + si + '<br>';
+                  todCount++;
+                }
+                if (day != currentDay){
+                  if (tomCount == 0){
+                    todayMeetings = "<p><b>Tomorrow's meetings: </b><br>";
+                  }
+                  tomMeetings = tomMeetings + cont.meetingGroups[i].meetings.startTimes[j] + ' - '+ cont.meetingGroups[i].meetings.endTimes[j] + ' '+ mt + '<br>';
+                  tomCount++;
+                }
+              }
+              contentHolder = contentHolder + todayMeetings + tomMeetings;
+              if (cont.meetingGroups[i].meetingGroup.handiAccess != "none"){
+                  contentHolder = contentHolder + "<h5>**Wheelchair Accessible" + '</h5>';
+              }
+              }
+                return contentHolder;
+        }
+
+        // make markers for locations!
+        function setMarker(map, el) {
+          var marker = new google.maps.Marker({
+            color:"#FFFFFF",
+            // new point pulled from rest api latLong lat and lng
+            position: new google.maps.LatLng(el._id.latLong.lat, el._id.latLong.lng),
+            map: map,
+            title: "Click for meeting info",
+            content: makeContent(el),
+          });
+          google.maps.event.addListener(marker, 'click', function() {
+            var infowindow = new google.maps.InfoWindow({ maxWidth: 200 });
+            infowindow.setContent(this.content);
+            if(openWindow) openWindow.close()
+            openWindow = infowindow;
+            infowindow.open(map, this);
+          });
+        }
+    </script>
+</head>
+
+<body>
+    <div id="map-canvas"></div>
+</body>
+
+</html>

@@ -31,7 +31,7 @@ var server = http.createServer(function(req, res) {
         if (handleError(err)) return;
 
         // get the total number of visits today (including the current visit)
-        client.query('SELECT COUNT(*) AS count FROM targetData;', function(err, result) {
+        client.query('SELECT COUNT(*) AS count FROM buttondata;', function(err, result) {
 
             // handle an error from the query
             if (handleError(err)) return;

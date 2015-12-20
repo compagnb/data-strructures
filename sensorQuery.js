@@ -30,7 +30,7 @@ var server = http.createServer(function(req, res) {
         if (handleError(err)) return;
 
         // get the total number of visits today (including the current visit)
-        client.query('SELECT COUNT(*) AS count FROM targetData;', function(err, result) {
+        client.query('SELECT * FROM sensorTest;', function(err, result) {
 
             // handle an error from the query
             if (handleError(err)) return;
@@ -38,7 +38,8 @@ var server = http.createServer(function(req, res) {
             // return the client to the connection pool for other requests to reuse
             done();
             res.writeHead(200, {'content-type': 'text/html'});
-            res.write('<h1>The trigger was pulled ' + result.rows[0].count + ' times.</h1>');
+            console.log(result);
+            res.write('<h1>The trigger was pulled ' + result.rows[0] + ' times.</h1>');
             res.end();
         });
     });
