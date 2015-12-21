@@ -54,7 +54,7 @@ Weekly Assignment 8: IR Dataset
 * [google sheet] (https://docs.google.com/spreadsheets/d/15X2WjJ8CWO6lHZ_YfgMWLkjaqSiOzUFOLdod8nDsCLQ/edit?usp=sharing)
 
 Weekly Assignment 9: Postgres Data
-* ![screenshot of completion](http://url/to/img.png)
+* ![screenshot of completion](https://github.com/compagnb/data-structures/blob/master/weeklyAssignments/wassign9/wassign9.png)
 
 Weekly Assignment 10: Pulling From Postgres
 before running run the following command in terminal "npm install http" and "npm install pg" 
