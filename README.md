@@ -46,6 +46,30 @@ before running run the following command in terminal "npm install cheerio", "npm
 Weekly Assignment 7: IR Sensor
 before running run the following command in terminal "npm install johnny-five"
 * [button code] (https://github.com/compagnb/data-structures/blob/master/weeklyAssignments/wassign7/button.js)
+* ![schematic for button](http://url/to/img.png)
 * [ir code] (https://github.com/compagnb/data-structures/blob/master/weeklyAssignments/wassign7/ir.js)
- ![schematic for button](http://url/to/img.png)
- ![schematic for for ir](http://url/to/img.png)
+* ![schematic for for ir](http://url/to/img.png)
+
+Weekly Assignment 8: IR Dataset
+* [google sheet] (https://docs.google.com/spreadsheets/d/15X2WjJ8CWO6lHZ_YfgMWLkjaqSiOzUFOLdod8nDsCLQ/edit?usp=sharing)
+
+Weekly Assignment 9: Postgres Data
+* ![screenshot of completion](http://url/to/img.png)
+
+Weekly Assignment 10: Pulling From Postgres
+before running run the following command in terminal "npm install http" and "npm install pg" 
+* [code] https://github.com/compagnb/data-structures/blob/master/weeklyAssignments/wassign10/wassign10.js
+* ![schematic for button](https://github.com/compagnb/data-structures/blob/master/weeklyAssignments/wassign10/wassign10.jpg)
+
+Weekly Assignment 11: More Pulling From Postgres
+before running run the following command in terminal "npm install http" and "npm install pg" 
+* [code] (https://github.com/compagnb/data-structures/blob/master/weeklyAssignments/wassign11/wassign11.js)
+
+Final 1: Manhattan AA Meetings
+* [code] (https://github.com/compagnb/data-structures/tree/master/aaFinal)
+
+Final 2: IR Laser Tag
+* [code] (https://github.com/compagnb/data-structures/tree/master/sensorFinal)
+
+Final Write Up
+* [google doc] (https://docs.google.com/document/d/1HYRlXJVUetpdhmKU08RU_i_20OghGnY7dW_9wplETzE/edit?usp=sharing)
