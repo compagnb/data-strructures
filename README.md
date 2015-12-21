@@ -66,6 +66,7 @@ before running run the following command in terminal "npm install http" and "npm
 * [code] (https://github.com/compagnb/data-structures/blob/master/weeklyAssignments/wassign11/wassign11.js)
 
 Final 1: Manhattan AA Meetings
+* [live link] (http://b.parsons.edu/~compagnb/pgdv/aaMap/index.html)
 * [code] (https://github.com/compagnb/data-structures/tree/master/aaFinal)
 
 Final 2: IR Laser Tag

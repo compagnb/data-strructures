@@ -1,0 +1,24 @@
+<html>
+ <head></head>
+ <body>
+ <script src="http://localhost:8888/socket.io/socket.io.js"></script>
+ <script>
+ // var io = require('socket.io');
+ var socket = io.connect('http://localhost:8888');
+ var mobileno = '0123456789';
+ function sendSql(sql, values, cbk) {
+socket.emit('sql', { sql: sql, values : values});
+socket.on('sql', function(data){
+    console.log(data);
+});
+}
+
+</script>
+<p>
+ <a href="#" onclick="sendSql('select * from sensorTest', [], function(data)          {console.log(data);})">Select</a>
+ </p>
+
+
+
+ </body>
+ </html>

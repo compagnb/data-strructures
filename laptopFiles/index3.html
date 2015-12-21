@@ -1,0 +1,71 @@
+var hitCount = 0;
+var misCount = 0;
+
+for (var i=0; i < dataset.length; i++) {
+  if (dataset[i].hit == true){
+    hitCount++;
+  }else {
+    misCount++;
+  }
+}
+console.log("hit total" + hitCount);
+console.log("miss total" + misCount);
+
+<!-- for (var i=0; i < dataset.length; i++) {
+    dataset[i].x = getRandomArbitrary(0, w);
+    dataset[i].y = getRandomArbitrary(0, h);
+    dataset[i].time = new Date(dataset[i].buttontime).getTime();
+}
+
+function addDot () {
+    var toAdd = {};
+    toAdd.time = new Date().getTime();
+    toAdd.x = getRandomArbitrary(0, w);
+    toAdd.y = getRandomArbitrary(0, h);
+    dataset.push(toAdd);
+}
+
+//Create SVG element
+var svg = d3.select("body")
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h);
+
+var color = d3.scale.linear()
+    .domain([mintime, maxtime])
+    .range(["blue", "red"]);
+
+var refreshGraph = function() {
+svg.selectAll("circle")
+   .data(dataset)
+   .enter()
+   .append("circle")
+
+   .attr("cx", function(d) {
+        return d.x;
+   })
+   .attr("cy", function(d) {
+        return d.y;
+   })
+   .attr("r", 5)
+   .attr("fill", function (d){
+        return color(d.time);
+   });
+};
+refreshGraph();
+
+function addDotAndRefreshGraph () {
+    addDot()
+    refreshGraph()
+}
+ -->
+var socket = io();
+
+socket.on('newData', function (data) {
+	console.log('getting newData');
+    addDotAndRefreshGraph();
+})
+
+        </script>
+    </body>
+</html>
