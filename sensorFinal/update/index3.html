@@ -16,7 +16,7 @@ var hitArray = [];
   console.log("miss count = " + missCount);
   console.log(hitArray);
 
-accDiv.innerHTML = "<h1>" + hitCount/totalCount + " percent of shots taken were hits. </h1>";
+accDiv.innerHTML = "<h1>" + (hitCount/totalCount).toFixed(2) * 100 + "% of shots taken were hits. </h1>";
 totalDiv.innerHTML = "<h1> A total of " + totalCount + " shots were taken. </h1>";
 hitDiv.innerHTML = "<h1>" + hitCount + " shots taken were hits. </h1>";
 missDiv.innerHTML = "<h1>" + missCount + "shots taken were misses. </h1>";
@@ -46,7 +46,7 @@ function refreshDivs(){
   console.log(hitArray);
 
 
-accDiv.innerHTML = "<h1>" + hitCount/totalCount + " percent of shots taken were hits. </h1>";
+accDiv.innerHTML = "<h1>" + (hitCount/totalCount).toFixed(2) * 100 + "% of shots taken were hits. </h1>";
 totalDiv.innerHTML = "<h1> A total of " + totalCount + " shots were taken. </h1>";
 hitDiv.innerHTML = "<h1>" + hitCount + " shots taken were hits. </h1>";
 missDiv.innerHTML = "<h1>" + missCount + "shots taken were misses. </h1>";
