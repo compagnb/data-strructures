@@ -16,11 +16,11 @@ var hitArray = [];
   console.log("miss count = " + missCount);
   console.log(hitArray);
 
-accDiv.innerHTML = "<h1>" + hitCount/totalCount + "shots taken. </h1>";
-totalDiv.innerHTML = "<h1>" + totalCount + "shots taken. </h1>";
-hitDiv.innerHTML = "<h1>" + hitCount + "shots taken. </h1>";
-missDiv.innerHTML = "<h1>" + missCount + "shots taken. </h1>";
-rankDiv.innerHTML = "<h1>" + totalCount + "shots taken. </h1>";
+accDiv.innerHTML = "<h1>" + hitCount/totalCount + " percent of shots taken were hits. </h1>";
+totalDiv.innerHTML = "<h1> A total of " + totalCount + " shots were taken. </h1>";
+hitDiv.innerHTML = "<h1>" + hitCount + " shots taken were hits. </h1>";
+missDiv.innerHTML = "<h1>" + missCount + "shots taken were misses. </h1>";
+rankDiv.innerHTML = "<h1>" + getRank() + "</h1>";
 
 
 function resetDataset(){
@@ -46,17 +46,30 @@ function refreshDivs(){
   console.log(hitArray);
 
 
-accDiv.innerHTML = "<h1>" + hitCount/totalCount + "shots taken. </h1>";
-totalDiv.innerHTML = "<h1>" + totalCount + "shots taken. </h1>";
-hitDiv.innerHTML = "<h1>" + hitCount + "shots taken. </h1>";
-missDiv.innerHTML = "<h1>" + missCount + "shots taken. </h1>";
-rankDiv.innerHTML = "<h1>" + totalCount + "shots taken. </h1>";
+accDiv.innerHTML = "<h1>" + hitCount/totalCount + " percent of shots taken were hits. </h1>";
+totalDiv.innerHTML = "<h1> A total of " + totalCount + " shots were taken. </h1>";
+hitDiv.innerHTML = "<h1>" + hitCount + " shots taken were hits. </h1>";
+missDiv.innerHTML = "<h1>" + missCount + "shots taken were misses. </h1>";
+rankDiv.innerHTML = "<h1>" + getRank() + "</h1>";
 
+}
+
+function getRank(){
+  if (hitCount/totalCount <= 0.25){
+    return "LAME!";
+  } else if (hitCount/totalCount > 0.25 && hitCount/totalCount <= 0.50 ){
+    return "Put on your glasses";
+  } else if (hitCount/totalCount > 0.5 && hitCount/totalCount <= 0.75 ){
+    return "Average";
+  } else if (hitCount/totalCount > 0.75 && hitCount/totalCount <= 1.0 ){
+    return "ROCKSTAR!";
+  }
 }
 
 function update(){
   resetDataset();
   refreshDivs();
+  window.location.reload(true);
 }
 
 
@@ -65,6 +78,7 @@ var socket = io();
 socket.on('newData', function (data) {
 	console.log('getting newData');
   update();
+  console.log(dataset);
     <!-- addDotAndRefreshGraph(); -->
 })
 

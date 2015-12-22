@@ -1,18 +1,17 @@
+var http = require('http');
+var pg = require('pg');
 var fs = require('fs');
 var data1 = fs.readFileSync(__dirname + '/index1.html');
 // var data2 = fs.readFileSync(__dirname + '/index2.html');
 var data3 = fs.readFileSync(__dirname + '/index3.html');
 
-var app = require('http').createServer(handler)
-var io = require('socket.io')(app);
-var pg = require('pg');
-
+// supply connection string through an environment variable
 var conString = "postgres://barb:pgdvdataviz@pgdv-data-structures.cruj1d5neyqx.us-west-2.rds.amazonaws.com:5432/postgres";
-
-app.listen(8080);
+var server = http.createServer(handler)
+var io = require('socket.io')(server);
 
 function handler (req, res) {
-
+    // get a pg client from the connection pool
     pg.connect(conString, function(err, client, done) {
 
         var handleError = function(err) {
@@ -40,17 +39,18 @@ function handler (req, res) {
 
             // handle an error from the query
             if (handleError(err)) return;
-
+            // console.log(result.rows[0].hit);
+            console.log(result.rows[0]);
             // return the client to the connection pool for other requests to reuse
             done();
             res.writeHead(200, {'content-type': 'text/html'});
             res.write(data1);
+            // res.write('<h1>Your shot was a ' + result.rows[0].hit + '!. </h1>');
             res.write('dataset = ' + JSON.stringify(result.rows) + ';');
             res.end(data3);
             res.end();
         });
     });
-
 }
 
 io.on('connection', function (socket) {
@@ -59,3 +59,5 @@ io.on('connection', function (socket) {
     console.log('button was pressed on local client');
   });
 });
+
+server.listen(8080);
