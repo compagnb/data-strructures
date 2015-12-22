@@ -1,0 +1,74 @@
+
+var hitArray = [];
+  var totalCount = dataset.length +1;
+  console.log("total count = " + totalCount);
+  for (var i = 0; i < dataset.length; i++){
+    hitArray[i] = dataset[i].hit;
+  }
+  for (var i = 0; i < hitArray.length; i++){
+    if (hitArray[i] == true){
+        hitCount++;
+      } else {
+        missCount++;
+    }
+  }
+  console.log("hit count = " + hitCount);
+  console.log("miss count = " + missCount);
+  console.log(hitArray);
+
+accDiv.innerHTML = "<h1>" + hitCount/totalCount + "shots taken. </h1>";
+totalDiv.innerHTML = "<h1>" + totalCount + "shots taken. </h1>";
+hitDiv.innerHTML = "<h1>" + hitCount + "shots taken. </h1>";
+missDiv.innerHTML = "<h1>" + missCount + "shots taken. </h1>";
+rankDiv.innerHTML = "<h1>" + totalCount + "shots taken. </h1>";
+
+
+function resetDataset(){
+  <!-- var totalCount = dataset.length +1; -->
+  hitCount = 0;
+  missCount = 0;
+}
+
+function refreshDivs(){
+  console.log("total count = " + totalCount);
+  for (var i = 0; i < dataset.length; i++){
+    hitArray[i] = dataset[i].hit;
+  }
+  for (var i = 0; i < hitArray.length; i++){
+    if (hitArray[i] == true){
+        hitCount++;
+      } else {
+        missCount++;
+    }
+  }
+  console.log("hit count = " + hitCount);
+  console.log("miss count = " + missCount);
+  console.log(hitArray);
+
+
+accDiv.innerHTML = "<h1>" + hitCount/totalCount + "shots taken. </h1>";
+totalDiv.innerHTML = "<h1>" + totalCount + "shots taken. </h1>";
+hitDiv.innerHTML = "<h1>" + hitCount + "shots taken. </h1>";
+missDiv.innerHTML = "<h1>" + missCount + "shots taken. </h1>";
+rankDiv.innerHTML = "<h1>" + totalCount + "shots taken. </h1>";
+
+}
+
+function update(){
+  resetDataset();
+  refreshDivs();
+}
+
+
+var socket = io();
+
+socket.on('newData', function (data) {
+	console.log('getting newData');
+  update();
+    <!-- addDotAndRefreshGraph(); -->
+})
+
+        </script>
+
+    </body>
+</html>

@@ -70,11 +70,11 @@ MongoClient.connect(url, function(err, db) {
         $or: [{
         
             $and: [{ meetingDayNum: currentDay },
-            { meetingStartHr: { $gt: currentTime, $lt: 25} } 
+            { meetingStartHr: { $gte: currentTime, $lt: 25} } 
             ]},
         
             { $and: [{ meetingDayNum: endDayNum },
-            { meetingStartHr: { $gt: -1, $lt: endTime } } 
+            { meetingStartHr: { $gt: -1, $lte: endTime } } 
             ]}
     ]}},
     // group results by address (maybe change to lat long)
@@ -137,4 +137,4 @@ MongoClient.connect(url, function(err, db) {
 //   res.send(data)
 })
  
-app.listen(process.env.PORT)
+app.listen(8080)

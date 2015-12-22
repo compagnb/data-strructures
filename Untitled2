@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>n</title>
+    <script src="p5.js" type="text/javascript"></script>
+    <script src="socket.min.js"></script>
+    <script>
+      badGlobalVelocity = 0.05;
+      var socket = io("localhost:3000");
+      socket.on("rollchange", function(e) { badGlobalVelocity = (Math.abs(e) < 1) ? 0 : e/10 });
+    </script>
+    <script src="sketch.js" type="text/javascript"></script>
+
+    <style> body {padding: 0; margin: 0;} </style>
+  </head>
+  <body>
+  </body>
+</html>
